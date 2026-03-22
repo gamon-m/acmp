@@ -6,6 +6,7 @@
     Pencil,
     Trash2,
     EllipsisVertical,
+    ChevronUp,
   } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button/index";
   import { Input } from "$lib/components/ui/input/index";
@@ -23,6 +24,8 @@
 
   let searchQuery = $state("");
   let selectedCategory = $state<string>("all");
+  let sortField = $state<"name" | "category" | "modCount" | "active">("name");
+  let sortDirection = $state<"asc" | "desc">("asc");
 
   const mockProfiles: Profile[] = $state([
     {
@@ -88,16 +91,41 @@
     ...new Set(mockProfiles.map((p) => p.category)),
   ]);
 
-  let filteredProfiles = $derived(
-    mockProfiles.filter((p) => {
+  function getFilteredProfiles() {
+    let result = mockProfiles.filter((p) => {
       const matchesSearch = p.name
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
       const matchesCategory =
         selectedCategory === "all" || p.category === selectedCategory;
       return matchesSearch && matchesCategory;
-    }),
-  );
+    });
+
+    result.sort((a, b) => {
+      let comparison = 0;
+      if (sortField === "name") {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortField === "category") {
+        comparison = a.category.localeCompare(b.category);
+      } else if (sortField === "modCount") {
+        comparison = a.modCount - b.modCount;
+      } else if (sortField === "active") {
+        comparison = a.active === b.active ? 0 : a.active ? 1 : -1;
+      }
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
+
+    return result;
+  }
+
+  function toggleSort(field: "name" | "category" | "modCount" | "active") {
+    if (sortField === field) {
+      sortDirection = sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      sortField = field;
+      sortDirection = "asc";
+    }
+  }
 
   function toggleActive(profile: Profile) {
     profile.active = !profile.active;
@@ -114,7 +142,7 @@
 
 <div class="p-6 mx-50">
   <div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-semibold">PROFILES</h2>
+    <h2 class="text-2xl font-semibold pl-5">PROFILES</h2>
     <div class="flex items-center gap-4">
       <div class="relative">
         <Search
@@ -149,31 +177,92 @@
   </div>
 
   <div class="space-y-2">
-    {#each filteredProfiles as profile (profile.id)}
+    <div
+      class="grid grid-cols-[1fr_100px_100px_auto] gap-6 items-center px-5 pb-4 text-xs font-medium text-muted-foreground border-b border-border"
+    >
+      <button
+        class="flex items-center gap-1 transition-colors {sortField === 'name'
+          ? 'text-foreground'
+          : 'hover:text-foreground'}"
+        onclick={() => toggleSort("name")}
+      >
+        PROFILE NAME
+        {#if sortField === "name"}
+          <ChevronUp
+            class="size-3 transition-transform {sortDirection === 'desc'
+              ? 'rotate-180'
+              : ''}"
+          />
+        {/if}
+      </button>
+      <button
+        class="flex items-center gap-1 justify-center transition-colors {sortField ===
+        'category'
+          ? 'text-foreground'
+          : 'hover:text-foreground'}"
+        onclick={() => toggleSort("category")}
+      >
+        CATEGORY
+        {#if sortField === "category"}
+          <ChevronUp
+            class="size-3 transition-transform {sortDirection === 'desc'
+              ? 'rotate-180'
+              : ''}"
+          />
+        {/if}
+      </button>
+      <button
+        class="flex items-center gap-1 justify-center transition-colors {sortField ===
+        'modCount'
+          ? 'text-foreground'
+          : 'hover:text-foreground'}"
+        onclick={() => toggleSort("modCount")}
+      >
+        MODS
+        {#if sortField === "modCount"}
+          <ChevronUp
+            class="size-3 transition-transform {sortDirection === 'desc'
+              ? 'rotate-180'
+              : ''}"
+          />
+        {/if}
+      </button>
+      <button
+        class="flex items-center gap-1 justify-center transition-colors {sortField ===
+        'active'
+          ? 'text-foreground'
+          : 'hover:text-foreground'}"
+        onclick={() => toggleSort("active")}
+      >
+        ACTIVE
+        {#if sortField === "active"}
+          <ChevronUp
+            class="size-3 transition-transform {sortDirection === 'desc'
+              ? 'rotate-180'
+              : ''}"
+          />
+        {/if}
+      </button>
+    </div>
+
+    {#each getFilteredProfiles() as profile (profile.id)}
       <Card.Root
         class="transition-colors border-l-6 hover:bg-accent/50 data-[active=true]:bg-muted data-[active=true]:hover:bg-accent data-[active=true]:border-primary"
         data-active={profile.active ? "true" : "false"}
       >
-        <Card.Content class="grid grid-cols-[1fr_100px_100px_auto] gap-6 py-3">
+        <Card.Content
+          class="grid grid-cols-[1fr_100px_100px_auto] gap-6 items-center"
+        >
           <div class="border-r border-border pr-4">
-            <span class="text-xs text-muted-foreground font-medium"
-              >PROFILE NAME</span
-            >
-            <p class="text-sm truncate">{profile.name}</p>
+            <p class="text-sm">{profile.name}</p>
           </div>
           <div class="border-r border-border pr-4 text-center">
-            <span class="text-xs text-muted-foreground font-medium"
-              >CATEGORY</span
-            >
             <p class="text-sm">{profile.category}</p>
           </div>
           <div class="border-r border-border pr-4 text-center">
-            <span class="text-xs text-muted-foreground font-medium"
-              >ACTIVE MODS</span
-            >
             <p class="text-sm">{profile.modCount} mods</p>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex items-center justify-center gap-2">
             <Button
               variant={profile.active ? "default" : "outline"}
               size="sm"
