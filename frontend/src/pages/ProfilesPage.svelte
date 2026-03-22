@@ -11,6 +11,7 @@
   import { Input } from "$lib/components/ui/input/index";
   import * as Card from "$lib/components/ui/card/index";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index";
+  import * as Select from "$lib/components/ui/select/index";
 
   interface Profile {
     id: string;
@@ -21,12 +22,13 @@
   }
 
   let searchQuery = $state("");
+  let selectedCategory = $state<string>("all");
 
   const mockProfiles: Profile[] = $state([
     {
       id: "1",
       name: "Drift",
-      category: "Cards",
+      category: "Cars",
       modCount: 12,
       active: false,
     },
@@ -54,7 +56,7 @@
     {
       id: "5",
       name: "Drift",
-      category: "Cards",
+      category: "Cars",
       modCount: 12,
       active: false,
     },
@@ -81,10 +83,20 @@
     },
   ]);
 
+  const categories = $derived([
+    "all",
+    ...new Set(mockProfiles.map((p) => p.category)),
+  ]);
+
   let filteredProfiles = $derived(
-    mockProfiles.filter((p) =>
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    ),
+    mockProfiles.filter((p) => {
+      const matchesSearch = p.name
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase());
+      const matchesCategory =
+        selectedCategory === "all" || p.category === selectedCategory;
+      return matchesSearch && matchesCategory;
+    }),
   );
 
   function toggleActive(profile: Profile) {
@@ -111,11 +123,25 @@
         <Input
           type="text"
           placeholder="Search profiles..."
-          class="pl-10 w-64 h-8"
+          class="pl-10 min-w-64 h-8"
           bind:value={searchQuery}
         />
       </div>
-      <Button class="h-8">
+      <Select.Root type="single" bind:value={selectedCategory}>
+        <Select.Trigger class="w-40 min-h-8"
+          >{selectedCategory === "all"
+            ? "All Categories"
+            : selectedCategory}</Select.Trigger
+        >
+        <Select.Content>
+          {#each categories as category}
+            <Select.Item value={category}>
+              {category === "all" ? "All Categories" : category}
+            </Select.Item>
+          {/each}
+        </Select.Content>
+      </Select.Root>
+      <Button class="h-8 min-w-30">
         <Plus class="size-4 mr-2" />
         Add Profile
       </Button>
@@ -152,7 +178,7 @@
               variant={profile.active ? "default" : "outline"}
               size="sm"
               onclick={() => toggleActive(profile)}
-              class="min-w-25 cursor-pointer h-8"
+              class="min-w-30 cursor-pointer h-8"
             >
               <Play class="w-5 mr-1" />
               {profile.active ? "Active" : "Activate"}
