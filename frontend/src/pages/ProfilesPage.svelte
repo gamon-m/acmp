@@ -23,7 +23,7 @@
   }
 
   let searchQuery = $state("");
-  let selectedCategory = $state<string>("all");
+  let selectedCategory = $state<string>("All");
   let sortField = $state<"name" | "category" | "modCount" | "active">("name");
   let sortDirection = $state<"asc" | "desc">("asc");
 
@@ -86,10 +86,7 @@
     },
   ]);
 
-  const categories = $derived([
-    "all",
-    ...new Set(mockProfiles.map((p) => p.category)),
-  ]);
+  const categories = ["All", "Cars", "Tracks"];
 
   const gridTable = "grid grid-cols-[4fr_100px_100px_160px]";
 
@@ -99,7 +96,7 @@
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
       const matchesCategory =
-        selectedCategory === "all" || p.category === selectedCategory;
+        selectedCategory === "All" || p.category === selectedCategory;
       return matchesSearch && matchesCategory;
     });
 
@@ -145,9 +142,7 @@
 <!-- Main content -->
 <div class="p-6 mx-50">
   <!-- Title and menus -->
-  <div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-semibold">PROFILES</h2>
-
+  <div class="flex items-center justify-between mb-6 gap-4">
     <div class="flex items-center gap-4">
       <!-- Search bar -->
       <div class="relative">
@@ -165,20 +160,22 @@
       <!-- Category selection -->
       <Select.Root type="single" bind:value={selectedCategory}>
         <Select.Trigger class="w-40 min-h-8"
-          >{selectedCategory === "all"
+          >{selectedCategory === "All"
             ? "All Categories"
             : selectedCategory}</Select.Trigger
         >
         <Select.Content>
           {#each categories as category}
             <Select.Item value={category}>
-              {category === "all" ? "All Categories" : category}
+              {category === "All" ? "All Categories" : category}
             </Select.Item>
           {/each}
         </Select.Content>
       </Select.Root>
+    </div>
 
-      <!-- Add profile button -->
+    <!-- Add profile button -->
+    <div>
       <Button class="h-8 min-w-30">
         <Plus class="size-4 mr-2" />
         Add Profile
