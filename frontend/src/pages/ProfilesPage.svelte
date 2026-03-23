@@ -91,6 +91,8 @@
     ...new Set(mockProfiles.map((p) => p.category)),
   ]);
 
+  const gridTable = "grid grid-cols-[4fr_100px_100px_160px]";
+
   function getFilteredProfiles() {
     let result = mockProfiles.filter((p) => {
       const matchesSearch = p.name
@@ -142,7 +144,7 @@
 
 <div class="p-6 mx-50">
   <div class="flex items-center justify-between mb-6">
-    <h2 class="text-2xl font-semibold pl-5">PROFILES</h2>
+    <h2 class="text-2xl font-semibold">PROFILES</h2>
     <div class="flex items-center gap-4">
       <div class="relative">
         <Search
@@ -178,23 +180,24 @@
 
   <div class="space-y-2">
     <div
-      class="grid grid-cols-[1fr_100px_100px_auto] gap-6 items-center px-5 pb-4 text-xs font-medium text-muted-foreground border-b border-border"
+      class="{gridTable} gap-6 items-center px-5 pb-4 text-xs font-medium text-muted-foreground border-b border-border"
     >
-      <button
-        class="flex items-center gap-1 transition-colors {sortField === 'name'
-          ? 'text-foreground'
-          : 'hover:text-foreground'}"
-        onclick={() => toggleSort("name")}
-      >
-        PROFILE NAME
-        {#if sortField === "name"}
+      <div class="flex items-center">
+        <button
+          class="flex items-center gap-1 transition-colors {sortField === 'name'
+            ? 'text-accent-foreground hover:text-foreground'
+            : 'hover:text-accent-foreground/25'}"
+          onclick={() => toggleSort("name")}
+        >
+          PROFILE NAME
           <ChevronUp
-            class="size-3 transition-transform {sortDirection === 'desc'
-              ? 'rotate-180'
-              : ''}"
+            class="size-3 transition-transform {sortField !== 'name'
+              ? 'invisible'
+              : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
           />
-        {/if}
-      </button>
+        </button>
+      </div>
+
       <button
         class="flex items-center gap-1 justify-center transition-colors {sortField ===
         'category'
@@ -203,13 +206,11 @@
         onclick={() => toggleSort("category")}
       >
         CATEGORY
-        {#if sortField === "category"}
-          <ChevronUp
-            class="size-3 transition-transform {sortDirection === 'desc'
-              ? 'rotate-180'
-              : ''}"
-          />
-        {/if}
+        <ChevronUp
+          class="size-3 transition-transform {sortField !== 'category'
+            ? 'invisible'
+            : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
+        />
       </button>
       <button
         class="flex items-center gap-1 justify-center transition-colors {sortField ===
@@ -219,29 +220,25 @@
         onclick={() => toggleSort("modCount")}
       >
         MODS
-        {#if sortField === "modCount"}
-          <ChevronUp
-            class="size-3 transition-transform {sortDirection === 'desc'
-              ? 'rotate-180'
-              : ''}"
-          />
-        {/if}
+        <ChevronUp
+          class="size-3 transition-transform {sortField !== 'modCount'
+            ? 'invisible'
+            : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
+        />
       </button>
       <button
-        class="flex items-center gap-1 justify-center transition-colors {sortField ===
+        class=" flex items-center gap-1 justify-center transition-colors {sortField ===
         'active'
           ? 'text-foreground'
           : 'hover:text-foreground'}"
         onclick={() => toggleSort("active")}
       >
         ACTIVE
-        {#if sortField === "active"}
-          <ChevronUp
-            class="size-3 transition-transform {sortDirection === 'desc'
-              ? 'rotate-180'
-              : ''}"
-          />
-        {/if}
+        <ChevronUp
+          class="size-3 transition-transform {sortField !== 'active'
+            ? 'invisible'
+            : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
+        />
       </button>
     </div>
 
@@ -250,9 +247,7 @@
         class="transition-colors border-l-6 hover:bg-accent/50 data-[active=true]:bg-muted data-[active=true]:hover:bg-accent data-[active=true]:border-primary"
         data-active={profile.active ? "true" : "false"}
       >
-        <Card.Content
-          class="grid grid-cols-[1fr_100px_100px_auto] gap-6 items-center"
-        >
+        <Card.Content class="{gridTable} gap-6 items-center">
           <div class="border-r border-border pr-4">
             <p class="text-sm">{profile.name}</p>
           </div>
@@ -262,37 +257,42 @@
           <div class="border-r border-border pr-4 text-center">
             <p class="text-sm">{profile.modCount} mods</p>
           </div>
-          <div class="flex items-center justify-center gap-2">
-            <Button
-              variant={profile.active ? "default" : "outline"}
-              size="sm"
-              onclick={() => toggleActive(profile)}
-              class="min-w-30 cursor-pointer h-8"
-            >
-              <Play class="w-5 mr-1" />
-              {profile.active ? "Active" : "Activate"}
-            </Button>
-            <DropdownMenu.Root>
-              <DropdownMenu.Trigger>
-                <Button variant="ghost" size="sm" class="h-8 w-8 p-0">
-                  <EllipsisVertical class="size-4" />
-                </Button>
-              </DropdownMenu.Trigger>
-              <DropdownMenu.Content>
-                <DropdownMenu.Item onclick={() => editProfile(profile)}>
-                  <Pencil class="size-4 mr-2" />
-                  Edit
-                </DropdownMenu.Item>
-                <DropdownMenu.Separator />
-                <DropdownMenu.Item
-                  class="text-destructive focus:text-destructive"
-                  onclick={() => deleteProfile(profile)}
-                >
-                  <Trash2 class="size-4 mr-2" />
-                  Delete
-                </DropdownMenu.Item>
-              </DropdownMenu.Content>
-            </DropdownMenu.Root>
+          <div class="flex items-center">
+            <div class="flex flex-1 justify-center px-2">
+              <Button
+                variant={profile.active ? "default" : "outline"}
+                size="sm"
+                onclick={() => toggleActive(profile)}
+                class="min-w-30 cursor-pointer h-8"
+              >
+                <Play class="w-5 mr-1" />
+                {profile.active ? "Active" : "Activate"}
+              </Button>
+            </div>
+
+            <div class="flex flex-1 justify-center">
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger>
+                  <Button variant="ghost" size="sm" class="h-8 w-8">
+                    <EllipsisVertical class="size-4" />
+                  </Button>
+                </DropdownMenu.Trigger>
+                <DropdownMenu.Content>
+                  <DropdownMenu.Item onclick={() => editProfile(profile)}>
+                    <Pencil class="size-4 mr-2" />
+                    Edit
+                  </DropdownMenu.Item>
+                  <DropdownMenu.Separator />
+                  <DropdownMenu.Item
+                    class="text-destructive focus:text-destructive"
+                    onclick={() => deleteProfile(profile)}
+                  >
+                    <Trash2 class="size-4 mr-2" />
+                    Delete
+                  </DropdownMenu.Item>
+                </DropdownMenu.Content>
+              </DropdownMenu.Root>
+            </div>
           </div>
         </Card.Content>
       </Card.Root>
