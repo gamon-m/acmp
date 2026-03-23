@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Settings } from "@lucide/svelte";
+  import { Settings2 } from "@lucide/svelte";
   import * as NavigationMenu from "$lib/components/ui/navigation-menu/index";
 
   type Page = "profiles" | "mods" | "settings";
@@ -49,6 +49,6 @@
       activeTab = "settings";
     }}
   >
-    <Settings class="size-8" />
+    <Settings2 class="size-8" />
   </button>
 </nav>

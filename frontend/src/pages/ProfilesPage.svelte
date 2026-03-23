@@ -142,10 +142,14 @@
   }
 </script>
 
+<!-- Main content -->
 <div class="p-6 mx-50">
+  <!-- Title and menus -->
   <div class="flex items-center justify-between mb-6">
     <h2 class="text-2xl font-semibold">PROFILES</h2>
+
     <div class="flex items-center gap-4">
+      <!-- Search bar -->
       <div class="relative">
         <Search
           class="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground"
@@ -157,6 +161,8 @@
           bind:value={searchQuery}
         />
       </div>
+
+      <!-- Category selection -->
       <Select.Root type="single" bind:value={selectedCategory}>
         <Select.Trigger class="w-40 min-h-8"
           >{selectedCategory === "all"
@@ -171,6 +177,8 @@
           {/each}
         </Select.Content>
       </Select.Root>
+
+      <!-- Add profile button -->
       <Button class="h-8 min-w-30">
         <Plus class="size-4 mr-2" />
         Add Profile
@@ -178,10 +186,13 @@
     </div>
   </div>
 
+  <!-- Main table -->
   <div class="space-y-2">
+    <!-- Sort table -->
     <div
       class="{gridTable} gap-6 items-center px-5 pb-4 text-xs font-medium text-muted-foreground border-b border-border"
     >
+      <!-- Profile name sort -->
       <div class="flex items-center">
         <button
           class="flex items-center gap-1 transition-colors {sortField === 'name'
@@ -198,6 +209,7 @@
         </button>
       </div>
 
+      <!-- Category sort -->
       <button
         class="flex items-center gap-1 justify-center transition-colors {sortField ===
         'category'
@@ -212,6 +224,8 @@
             : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
         />
       </button>
+
+      <!-- Mod count sort -->
       <button
         class="flex items-center gap-1 justify-center transition-colors {sortField ===
         'modCount'
@@ -226,6 +240,8 @@
             : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
         />
       </button>
+
+      <!-- Active sort -->
       <button
         class=" flex items-center gap-1 justify-center transition-colors {sortField ===
         'active'
@@ -242,21 +258,29 @@
       </button>
     </div>
 
+    <!-- Profile list -->
     {#each getFilteredProfiles() as profile (profile.id)}
       <Card.Root
         class="transition-colors border-l-6 hover:bg-accent/50 data-[active=true]:bg-muted data-[active=true]:hover:bg-accent data-[active=true]:border-primary"
         data-active={profile.active ? "true" : "false"}
       >
         <Card.Content class="{gridTable} gap-6 items-center">
+          <!-- Profile name -->
           <div class="border-r border-border pr-4">
             <p class="text-sm">{profile.name}</p>
           </div>
+
+          <!-- Category -->
           <div class="border-r border-border pr-4 text-center">
             <p class="text-sm">{profile.category}</p>
           </div>
+
+          <!-- Mod count -->
           <div class="border-r border-border pr-4 text-center">
             <p class="text-sm">{profile.modCount} mods</p>
           </div>
+
+          <!-- Active button and dropdown menu -->
           <div class="flex items-center">
             <div class="flex flex-1 justify-center px-2">
               <Button
@@ -270,6 +294,7 @@
               </Button>
             </div>
 
+            <!-- Dropdown menu -->
             <div class="flex flex-1 justify-center">
               <DropdownMenu.Root>
                 <DropdownMenu.Trigger>
@@ -298,5 +323,7 @@
       </Card.Root>
     {/each}
   </div>
+
+  <!-- Empty space -->
   <div class="min-h-20"></div>
 </div>
