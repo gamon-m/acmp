@@ -1,10 +1,12 @@
 <script lang="ts">
-  import { Plus } from "@lucide/svelte";
   import { Button, buttonVariants } from "$lib/components/ui/button/index";
+  import Checkbox from "$lib/components/ui/checkbox/checkbox.svelte";
   import * as Dialog from "$lib/components/ui/dialog/index";
+  import * as Table from "$lib/components/ui/table/index";
   import { Input } from "$lib/components/ui/input/index";
   import Label from "$lib/components/ui/label/label.svelte";
-  import { Search } from "@lucide/svelte";
+  import { Plus, Search } from "@lucide/svelte";
+  import SortButton from "./SortButton.svelte";
 
   let profileName = $state<string>("");
   let selectedMods = $state<Set<string>>(new Set());
@@ -13,7 +15,7 @@
   let searchQuery = $state<string>("");
   let sortField = $state<"name" | "lastModified">("name");
   let sortDirection = $state<"asc" | "desc">("asc");
-  let showUnusedMods = $state<boolean>(false);
+  let hideUsedMods = $state<boolean>(false);
 
   interface Mod {
     id: string;
@@ -117,7 +119,8 @@
         .includes(searchQuery.toLowerCase());
       const matchesCategory =
         selectedCategory === "All" || m.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const notInProfiles = !hideUsedMods || !m.inProfile;
+      return matchesSearch && matchesCategory && notInProfiles;
     });
 
     result.sort((a, b) => {
@@ -134,6 +137,15 @@
     });
 
     return result;
+  }
+
+  function toggleSort(field: "name" | "lastModified") {
+    if (sortField === field) {
+      sortDirection = sortDirection === "asc" ? "desc" : "asc";
+    } else {
+      sortField = field;
+      sortDirection = "asc";
+    }
   }
 
   function toggleSelection(modId: string) {
@@ -223,37 +235,86 @@
                   bind:value={searchQuery}
                 />
               </div>
+              <!-- Show unused mods toggle -->
+              <div class="flex items-center gap-2">
+                <Checkbox
+                  id="hide-used-mods"
+                  checked={hideUsedMods}
+                  onCheckedChange={() => (hideUsedMods = !hideUsedMods)}
+                />
+                <Label for="hide-used-mods">Only show unused mods</Label>
+              </div>
             </div>
             <!-- Mod List -->
-            <div class="max-h-80 min-h-80 overflow-y-auto border mt-2">
-              {#each getFilteredMods() as mod}
-                <div
-                  class="flex items-center px-4 py-2 hover:bg-background-light cursor-pointer"
-                  class:selected={selectedMods.has(mod.id)}
-                  onclick={() => toggleSelection(mod.id)}
-                >
-                  <span>{mod.name}</span>
-                  <input
-                    type="checkbox"
-                    class="ml-auto mr-4"
-                    checked={selectedMods.has(mod.id)}
-                  />
-                </div>
-              {/each}
+            <div class="border mt-2">
+              <!-- Header Table (non-scrollable) -->
+              <Table.Root>
+                <Table.Header class="bg-background-light border-b">
+                  <Table.Row class="hover:bg-background-light">
+                    <Table.Head>
+                      <button
+                        class="hover:text-foreground cursor-pointer"
+                        onclick={() => toggleSort("name")}
+                      >
+                        MOD NAME
+                        {#if sortField === "name"}
+                          {sortDirection === "asc" ? " ↑" : " ↓"}
+                        {/if}
+                      </button>
+                    </Table.Head>
+                    <Table.Head class="w-30">
+                      <button
+                        class="hover:text-foreground cursor-pointer text-center"
+                        onclick={() => toggleSort("lastModified")}
+                      >
+                        LAST MODIFIED
+                        {#if sortField === "lastModified"}
+                          {sortDirection === "asc" ? " ↑" : " ↓"}
+                        {/if}
+                      </button>
+                    </Table.Head>
+                    <Table.Head class="w-10"></Table.Head>
+                  </Table.Row>
+                </Table.Header>
+              </Table.Root>
+
+              <!-- Scrollable Body Table -->
+              <div class="max-h-40 min-h-40 overflow-y-auto">
+                <Table.Root>
+                  <Table.Body>
+                    {#each getFilteredMods() as mod}
+                      <Table.Row
+                        class="cursor-pointer"
+                        onclick={() => toggleSelection(mod.id)}
+                      >
+                        <Table.Cell>{mod.name}</Table.Cell>
+                        <Table.Cell class="text-center"
+                          >{mod.lastModified}</Table.Cell
+                        >
+                        <Table.Cell class="text-center">
+                          <Checkbox
+                            checked={selectedMods.has(mod.id)}
+                            readonly
+                          />
+                        </Table.Cell>
+                      </Table.Row>
+                    {/each}
+                  </Table.Body>
+                </Table.Root>
+              </div>
             </div>
-            <p class="flex justify-end">{modCountLabel(selectedMods.size)}</p>
           </div>
+          <Dialog.Footer>
+            <Dialog.Close
+              type="button"
+              class={buttonVariants({ variant: "outline" })}
+            >
+              Cancel
+            </Dialog.Close>
+            <Button type="submit">Create</Button>
+          </Dialog.Footer>
         </div>
-      </div>
-      <Dialog.Footer>
-        <Dialog.Close
-          type="button"
-          class={buttonVariants({ variant: "outline" })}
-        >
-          Cancel
-        </Dialog.Close>
-        <Button type="submit">Create</Button>
-      </Dialog.Footer>
-    </Dialog.Content>
+      </div></Dialog.Content
+    >
   </form>
 </Dialog.Root>
