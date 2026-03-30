@@ -175,8 +175,8 @@
         {#each getFilteredMods() as mod}
           <Table.Row
             class="border-l-4! {mod.active
-              ? ' border-l-primary bg-muted hover:bg-accent'
-              : 'bg-card hover:bg-accent/50'} "
+              ? ' border-l-primary bg-muted/50 hover:bg-accent/50'
+              : 'bg-card hover:bg-muted/50'} "
           >
             <Table.Cell class="border-r">{mod.name}</Table.Cell>
             <Table.Cell class="border-r text-center">{mod.category}</Table.Cell>
