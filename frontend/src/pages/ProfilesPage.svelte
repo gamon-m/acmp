@@ -6,13 +6,13 @@
     Pencil,
     Trash2,
     EllipsisVertical,
-    ChevronUp,
   } from "@lucide/svelte";
   import { Button } from "$lib/components/ui/button/index";
   import { Input } from "$lib/components/ui/input/index";
   import * as Card from "$lib/components/ui/card/index";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index";
   import * as Select from "$lib/components/ui/select/index";
+  import SortButton from "../components/SortButton.svelte";
 
   interface Profile {
     id: string;
@@ -109,7 +109,7 @@
       } else if (sortField === "modCount") {
         comparison = a.modCount - b.modCount;
       } else if (sortField === "active") {
-        comparison = a.active === b.active ? 0 : a.active ? 1 : -1;
+        comparison = a.active === b.active ? 0 : a.active ? -1 : 1;
       }
       return sortDirection === "asc" ? comparison : -comparison;
     });
@@ -191,68 +191,42 @@
     >
       <!-- Profile name sort -->
       <div class="flex items-center">
-        <button
-          class="flex items-center gap-1 transition-colors {sortField === 'name'
-            ? 'text-accent-foreground hover:text-foreground'
-            : 'hover:text-accent-foreground/25'}"
-          onclick={() => toggleSort("name")}
-        >
-          PROFILE NAME
-          <ChevronUp
-            class="size-3 transition-transform {sortField !== 'name'
-              ? 'invisible'
-              : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
-          />
-        </button>
+        <SortButton
+          displayName="PROFILE NAME"
+          catName="name"
+          {toggleSort}
+          {sortField}
+          {sortDirection}
+          center={false}
+        ></SortButton>
       </div>
 
       <!-- Category sort -->
-      <button
-        class="flex items-center gap-1 justify-center transition-colors {sortField ===
-        'category'
-          ? 'text-foreground'
-          : 'hover:text-foreground'}"
-        onclick={() => toggleSort("category")}
-      >
-        CATEGORY
-        <ChevronUp
-          class="size-3 transition-transform {sortField !== 'category'
-            ? 'invisible'
-            : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
-        />
-      </button>
+      <SortButton
+        displayName="&ensp;CATEGORY"
+        catName="category"
+        {toggleSort}
+        {sortField}
+        {sortDirection}
+      ></SortButton>
 
       <!-- Mod count sort -->
-      <button
-        class="flex items-center gap-1 justify-center transition-colors {sortField ===
-        'modCount'
-          ? 'text-foreground'
-          : 'hover:text-foreground'}"
-        onclick={() => toggleSort("modCount")}
-      >
-        MODS
-        <ChevronUp
-          class="size-3 transition-transform {sortField !== 'modCount'
-            ? 'invisible'
-            : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
-        />
-      </button>
+      <SortButton
+        displayName="&ensp;MOD COUNT"
+        catName="modCount"
+        {toggleSort}
+        {sortField}
+        {sortDirection}
+      ></SortButton>
 
       <!-- Active sort -->
-      <button
-        class=" flex items-center gap-1 justify-center transition-colors {sortField ===
-        'active'
-          ? 'text-foreground'
-          : 'hover:text-foreground'}"
-        onclick={() => toggleSort("active")}
-      >
-        ACTIVE
-        <ChevronUp
-          class="size-3 transition-transform {sortField !== 'active'
-            ? 'invisible'
-            : ''} {sortDirection === 'desc' ? 'rotate-180' : ''}"
-        />
-      </button>
+      <SortButton
+        displayName="&ensp;ACTIVE"
+        catName="active"
+        {toggleSort}
+        {sortField}
+        {sortDirection}
+      ></SortButton>
     </div>
 
     <!-- Profile list -->
@@ -324,3 +298,5 @@
   <!-- Empty space -->
   <div class="min-h-20"></div>
 </div>
+
+<!-- Add profile modal -->
