@@ -1,7 +1,6 @@
 <script lang="ts">
   import {
     Search,
-    Plus,
     Play,
     Pencil,
     Trash2,
@@ -13,6 +12,7 @@
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index";
   import * as Select from "$lib/components/ui/select/index";
   import SortButton from "../components/SortButton.svelte";
+  import AddProfileDialog from "../components/AddProfileDialog.svelte";
 
   interface Profile {
     id: string;
@@ -176,10 +176,7 @@
 
     <!-- Add profile button -->
     <div>
-      <Button class="h-8 min-w-30">
-        <Plus class="size-4 mr-2" />
-        Add Profile
-      </Button>
+      <AddProfileDialog />
     </div>
   </div>
 
@@ -298,5 +295,3 @@
   <!-- Empty space -->
   <div class="min-h-20"></div>
 </div>
-
-<!-- Add profile modal -->
