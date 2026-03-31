@@ -229,7 +229,7 @@
     <!-- Profile list -->
     {#each getFilteredProfiles() as profile (profile.id)}
       <Card.Root
-        class="transition-colors border-l-6 hover:bg-accent/50 data-[active=true]:bg-muted data-[active=true]:hover:bg-accent data-[active=true]:border-primary"
+        class="bg-input/30 transition-colors border-l-6 hover:bg-accent/50 data-[active=true]:bg-muted data-[active=true]:hover:bg-accent data-[active=true]:border-primary"
         data-active={profile.active ? "true" : "false"}
       >
         <Card.Content class="{gridTable} gap-6 items-center">

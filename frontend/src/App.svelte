@@ -9,7 +9,7 @@
   let activeTab: Page = "profiles";
 </script>
 
-<main class="min-h-screen bg-background-light">
+<main class="min-h-screen bg-background">
   <Navigation bind:activeTab />
 
   {#if activeTab === "profiles"}

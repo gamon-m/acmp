@@ -136,8 +136,8 @@
   <!-- Table -->
   <div>
     <Table.Root>
-      <Table.Header class="bg-background-light hover:bg-background-light">
-        <Table.Row class="hover:bg-background-light">
+      <Table.Header class="bg-background hover:bg-background">
+        <Table.Row class="hover:bg-background">
           <Table.Head>
             <SortButton
               displayName="MOD NAME"
@@ -171,12 +171,10 @@
           </Table.Head>
         </Table.Row>
       </Table.Header>
-      <Table.Body class="bg-card">
+      <Table.Body class="bg-input/30">
         {#each getFilteredMods() as mod}
           <Table.Row
-            class="border-l-4! {mod.active
-              ? ' border-l-primary bg-muted/50 hover:bg-accent/50'
-              : 'bg-card hover:bg-muted/50'} "
+            class="border-l-4! {mod.active ? ' border-l-primary' : ''} "
           >
             <Table.Cell class="border-r">{mod.name}</Table.Cell>
             <Table.Cell class="border-r text-center">{mod.category}</Table.Cell>

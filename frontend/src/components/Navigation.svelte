@@ -8,7 +8,7 @@
 </script>
 
 <nav
-  class="grid grid-cols-[1fr_auto_1fr] items-center px-12 py-4 border-b border-border bg-background"
+  class="grid grid-cols-[1fr_auto_1fr] items-center px-12 py-4 border-b border-border bg-header"
 >
   <h1 class="text-3xl font-bold text-primary">AC MOD PROFILES</h1>
 
