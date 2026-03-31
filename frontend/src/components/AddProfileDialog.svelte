@@ -219,6 +219,7 @@
               </Button>
             </div>
           </div>
+
           <!-- Mod table -->
           <div class="grid gap-2">
             <Label>Mods</Label>
@@ -245,53 +246,50 @@
                 <Label for="hide-used-mods">Only show unused mods</Label>
               </div>
             </div>
+
             <!-- Mod List -->
-            <div class="border mt-2">
+            <div class="bg-input/30 border border-input mt-2">
               <!-- Header Table (non-scrollable) -->
               <Table.Root>
-                <Table.Header class="bg-background-light border-b">
-                  <Table.Row class="hover:bg-background-light">
-                    <Table.Head>
-                      <button
-                        class="hover:text-foreground cursor-pointer"
-                        onclick={() => toggleSort("name")}
-                      >
-                        MOD NAME
-                        {#if sortField === "name"}
-                          {sortDirection === "asc" ? " ↑" : " ↓"}
-                        {/if}
-                      </button>
+                <Table.Header class="border-b border-input">
+                  <Table.Row class="hover:bg-transparent">
+                    <Table.Head class="w-[60%]">
+                      <SortButton
+                        displayName="MOD NAME"
+                        catName="name"
+                        {toggleSort}
+                        {sortField}
+                        {sortDirection}
+                      ></SortButton>
                     </Table.Head>
-                    <Table.Head class="w-30">
-                      <button
-                        class="hover:text-foreground cursor-pointer text-center"
-                        onclick={() => toggleSort("lastModified")}
-                      >
-                        LAST MODIFIED
-                        {#if sortField === "lastModified"}
-                          {sortDirection === "asc" ? " ↑" : " ↓"}
-                        {/if}
-                      </button>
+                    <Table.Head class="w-[30%]">
+                      <div class="flex justify-center">
+                        <SortButton
+                          displayName="&emsp;LAST MODIFIED"
+                          catName="lastModified"
+                          {toggleSort}
+                          {sortField}
+                          {sortDirection}
+                          center={true}
+                        ></SortButton>
+                      </div>
                     </Table.Head>
-                    <Table.Head class="w-10"></Table.Head>
+                    <Table.Head class="w-[10%]"></Table.Head>
                   </Table.Row>
                 </Table.Header>
               </Table.Root>
 
               <!-- Scrollable Body Table -->
-              <div class="max-h-40 min-h-40 overflow-y-auto">
+              <div class="max-h-80 min-h-80 overflow-y-auto">
                 <Table.Root>
-                  <Table.Body>
+                  <Table.Body class="border-b border-input">
                     {#each getFilteredMods() as mod}
-                      <Table.Row
-                        class="cursor-pointer"
-                        onclick={() => toggleSelection(mod.id)}
-                      >
-                        <Table.Cell>{mod.name}</Table.Cell>
-                        <Table.Cell class="text-center"
+                      <Table.Row onclick={() => toggleSelection(mod.id)}>
+                        <Table.Cell class="w-[60%]">{mod.name}</Table.Cell>
+                        <Table.Cell class="w-[30%] text-center"
                           >{mod.lastModified}</Table.Cell
                         >
-                        <Table.Cell class="text-center">
+                        <Table.Cell class="w-[10%]">
                           <Checkbox
                             checked={selectedMods.has(mod.id)}
                             readonly
@@ -303,6 +301,9 @@
                 </Table.Root>
               </div>
             </div>
+            <p class="text-right">
+              {modCountLabel(selectedMods.size)}
+            </p>
           </div>
           <Dialog.Footer>
             <Dialog.Close
@@ -314,7 +315,7 @@
             <Button type="submit">Create</Button>
           </Dialog.Footer>
         </div>
-      </div></Dialog.Content
-    >
+      </div>
+    </Dialog.Content>
   </form>
 </Dialog.Root>
