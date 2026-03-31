@@ -16,7 +16,7 @@
     --primary-foreground: oklch(0.971 0.013 17.38);
     --secondary: oklch(0.274 0.006 286.033);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(30.726% 0.00286 16.641);
+    --muted: oklch(32.998% 0.00139 15.747);
     --muted-foreground: oklch(0.709 0.005 25.124);
     --accent: oklch(36.684% 0.00411 16.787);
     --accent-foreground: oklch(89.143% 0.0001 271.152);
@@ -40,6 +40,9 @@
   }
   * {
     @apply border-border outline-ring/50;
+  }
+  html {
+    font-size: 18px;
   }
   body {
     @apply bg-background text-foreground font-sans overflow-hidden;

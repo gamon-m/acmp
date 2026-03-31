@@ -88,7 +88,7 @@
 
   const categories = ["All", "Cars", "Tracks"];
 
-  const gridTable = "grid grid-cols-[4fr_100px_100px_160px]";
+  const gridTable = "grid grid-cols-[4fr_120px_120px_180px]";
 
   function getFilteredProfiles() {
     let result = mockProfiles.filter((p) => {
