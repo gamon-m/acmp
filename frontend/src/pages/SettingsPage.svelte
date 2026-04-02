@@ -133,7 +133,7 @@
       </Card.Header>
       <Card.Content>
         <Dialog.Root bind:open={resetDialogOpen}>
-          <Dialog.Trigger asChild>
+          <Dialog.Trigger>
             <Button variant="destructive">Reset App</Button>
           </Dialog.Trigger>
           <Dialog.Content>

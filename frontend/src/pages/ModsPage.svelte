@@ -52,6 +52,38 @@
       category: "Cars",
       active: false,
     },
+    { id: "13", name: "esda_mk5_public", category: "Cars", active: false },
+    { id: "14", name: "alfa_romeo_156", category: "Cars", active: false },
+    { id: "15", name: "ariel_atom_500", category: "Cars", active: true },
+    { id: "16", name: "acu_okutama-circuit", category: "Tracks", active: true },
+    { id: "17", name: "sdv_bmw_e46_330ci_rhd", category: "Cars", active: true },
+    {
+      id: "18",
+      name: "shuto_revival_project_beta",
+      category: "Tracks",
+      active: false,
+    },
+    { id: "19", name: "swarm_fluffs_mx5", category: "Cars", active: true },
+    { id: "20", name: "The Springs", category: "Tracks", active: false },
+    {
+      id: "21",
+      name: "wdts_toyota_cresta_jzx100",
+      category: "Cars",
+      active: true,
+    },
+    {
+      id: "22",
+      name: "fumi_cp_bmw_e36_330i_sedan",
+      category: "Cars",
+      active: true,
+    },
+    { id: "23", name: "union_island", category: "Tracks", active: true },
+    {
+      id: "24",
+      name: "pcp2_fumi_cp24_lex_is200_v8",
+      category: "Cars",
+      active: false,
+    },
   ]);
 
   function toggleSort(field: "name" | "category" | "active") {
@@ -134,11 +166,11 @@
   </div>
 
   <!-- Table -->
-  <div>
+  <div class="max-h-[calc(100vh-200px)] overflow-y-auto">
     <Table.Root>
-      <Table.Header class="bg-background hover:bg-background">
+      <Table.Header class="bg-background hover:bg-background sticky top-0 z-10">
         <Table.Row class="hover:bg-background">
-          <Table.Head>
+          <Table.Head class="w-[60%]">
             <SortButton
               displayName="MOD NAME"
               catName="name"
@@ -147,7 +179,7 @@
               {sortDirection}
             ></SortButton>
           </Table.Head>
-          <Table.Head class="w-50">
+          <Table.Head class="w-[20%]">
             <div class="flex justify-center">
               <SortButton
                 displayName="&emsp;CATEGORY"
@@ -158,7 +190,7 @@
               ></SortButton>
             </div>
           </Table.Head>
-          <Table.Head class="w-50">
+          <Table.Head class="w-[20%]">
             <div class="flex justify-center">
               <SortButton
                 displayName="&emsp;ACTIVE"
@@ -176,9 +208,9 @@
           <Table.Row
             class="border-l-4! {mod.active ? ' border-l-primary' : ''} "
           >
-            <Table.Cell class="border-r">{mod.name}</Table.Cell>
-            <Table.Cell class="border-r text-center">{mod.category}</Table.Cell>
-            <Table.Cell class="text-center"
+            <Table.Cell class="w-[60%] border-r">{mod.name}</Table.Cell>
+            <Table.Cell class="w-[20%] border-r text-center">{mod.category}</Table.Cell>
+            <Table.Cell class="w-[20%] text-center"
               >{mod.active ? "Active" : "Inactive"}</Table.Cell
             >
           </Table.Row>
@@ -186,7 +218,4 @@
       </Table.Body>
     </Table.Root>
   </div>
-
-  <!-- Empty space -->
-  <div class="min-h-20"></div>
 </div>

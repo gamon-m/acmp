@@ -181,10 +181,10 @@
   </div>
 
   <!-- Main table -->
-  <div class="space-y-2">
-    <!-- Sort table -->
+  <div class="flex flex-col max-h-[calc(100vh-200px)]">
+    <!-- Sort table - fixed header -->
     <div
-      class="{gridTable} gap-6 items-center px-5 pb-4 text-xs font-medium text-muted-foreground border-b border-border"
+      class="{gridTable} gap-6 items-center px-5 pb-4 text-xs font-medium text-muted-foreground border-b border-border shrink-0"
     >
       <!-- Profile name sort -->
       <div class="flex items-center">
@@ -226,72 +226,71 @@
       ></SortButton>
     </div>
 
-    <!-- Profile list -->
-    {#each getFilteredProfiles() as profile (profile.id)}
-      <Card.Root
-        class="bg-input/30 transition-colors border-l-6 hover:bg-accent/50 data-[active=true]:bg-muted data-[active=true]:hover:bg-accent data-[active=true]:border-primary"
-        data-active={profile.active ? "true" : "false"}
-      >
-        <Card.Content class="{gridTable} gap-6 items-center">
-          <!-- Profile name -->
-          <div class="border-r border-border pr-4">
-            <p class="text-sm">{profile.name}</p>
-          </div>
-
-          <!-- Category -->
-          <div class="border-r border-border pr-4 text-center">
-            <p class="text-sm">{profile.category}</p>
-          </div>
-
-          <!-- Mod count -->
-          <div class="border-r border-border pr-4 text-center">
-            <p class="text-sm">{profile.modCount} mods</p>
-          </div>
-
-          <!-- Active button and dropdown menu -->
-          <div class="flex items-center">
-            <div class="flex flex-1 justify-center px-2">
-              <Button
-                variant={profile.active ? "default" : "outline"}
-                size="sm"
-                onclick={() => toggleActive(profile)}
-                class="min-w-30 cursor-pointer h-8"
-              >
-                <Play class="w-5 mr-1" />
-                {profile.active ? "Active" : "Activate"}
-              </Button>
+    <!-- Profile list - scrollable content -->
+    <div class="overflow-y-auto space-y-2">
+      {#each getFilteredProfiles() as profile (profile.id)}
+        <Card.Root
+          class="bg-input/30 transition-colors border-l-6 hover:bg-accent/50 data-[active=true]:bg-muted data-[active=true]:hover:bg-accent data-[active=true]:border-primary"
+          data-active={profile.active ? "true" : "false"}
+        >
+          <Card.Content class="{gridTable} gap-6 items-center">
+            <!-- Profile name -->
+            <div class="border-r border-border pr-4">
+              <p class="text-sm">{profile.name}</p>
             </div>
 
-            <!-- Dropdown menu -->
-            <div class="flex flex-1 justify-center">
-              <DropdownMenu.Root>
-                <DropdownMenu.Trigger>
-                  <Button variant="ghost" size="sm" class="h-8 w-8">
-                    <EllipsisVertical class="size-4" />
-                  </Button>
-                </DropdownMenu.Trigger>
-                <DropdownMenu.Content>
-                  <DropdownMenu.Item onclick={() => editProfile(profile)}>
-                    <Pencil class="size-4 mr-2" />
-                    Edit
-                  </DropdownMenu.Item>
-                  <DropdownMenu.Separator />
-                  <DropdownMenu.Item
-                    class="text-destructive focus:text-destructive"
-                    onclick={() => deleteProfile(profile)}
-                  >
-                    <Trash2 class="size-4 mr-2" />
-                    Delete
-                  </DropdownMenu.Item>
-                </DropdownMenu.Content>
-              </DropdownMenu.Root>
+            <!-- Category -->
+            <div class="border-r border-border pr-4 text-center">
+              <p class="text-sm">{profile.category}</p>
             </div>
-          </div>
-        </Card.Content>
-      </Card.Root>
-    {/each}
+
+            <!-- Mod count -->
+            <div class="border-r border-border pr-4 text-center">
+              <p class="text-sm">{profile.modCount} mods</p>
+            </div>
+
+            <!-- Active button and dropdown menu -->
+            <div class="flex items-center">
+              <div class="flex flex-1 justify-center px-2">
+                <Button
+                  variant={profile.active ? "default" : "outline"}
+                  size="sm"
+                  onclick={() => toggleActive(profile)}
+                  class="min-w-30 cursor-pointer h-8"
+                >
+                  <Play class="w-5 mr-1" />
+                  {profile.active ? "Active" : "Activate"}
+                </Button>
+              </div>
+
+              <!-- Dropdown menu -->
+              <div class="flex flex-1 justify-center">
+                <DropdownMenu.Root>
+                  <DropdownMenu.Trigger>
+                    <Button variant="ghost" size="sm" class="h-8 w-8">
+                      <EllipsisVertical class="size-4" />
+                    </Button>
+                  </DropdownMenu.Trigger>
+                  <DropdownMenu.Content>
+                    <DropdownMenu.Item onclick={() => editProfile(profile)}>
+                      <Pencil class="size-4 mr-2" />
+                      Edit
+                    </DropdownMenu.Item>
+                    <DropdownMenu.Separator />
+                    <DropdownMenu.Item
+                      class="text-destructive focus:text-destructive"
+                      onclick={() => deleteProfile(profile)}
+                    >
+                      <Trash2 class="size-4 mr-2" />
+                      Delete
+                    </DropdownMenu.Item>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Root>
+              </div>
+            </div>
+          </Card.Content>
+        </Card.Root>
+      {/each}
+    </div>
   </div>
-
-  <!-- Empty space -->
-  <div class="min-h-20"></div>
 </div>
