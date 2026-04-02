@@ -8,25 +8,48 @@
   import { Label } from "$lib/components/ui/label/index";
   import { Separator } from "$lib/components/ui/separator/index";
 
-  let assettoCorsaModFolder = $state("");
-  let assettoCorsaRootFolder = $state("");
-  let automaticProfiles = $state(false);
+  import { GetSettings, SaveSettings } from "../../wailsjs/go/Main/App";
+
+  interface Settings {
+    assetto_corsa_path: string;
+    mods_path: string;
+    automatic_profiles: boolean;
+  }
+
+  let settings = $state<Settings>({
+    assetto_corsa_path: "",
+    mods_path: "",
+    automatic_profiles: false,
+  });
+
   let resetDialogOpen = $state(false);
 
   async function selectModFolder() {}
 
   async function selectRootFolder() {}
 
-  async function saveSettings() {}
+  async function saveSettings() {
+    try {
+      await SaveSettings(settings);
+      alert("Settings saved successfully!");
+    } catch (error) {
+      console.error("Failed to save settings:", error);
+      alert("Failed to save settings. Please try again.");
+    }
+  }
 
   async function resetApp() {
-    assettoCorsaModFolder = "";
-    assettoCorsaRootFolder = "";
-    automaticProfiles = false;
     resetDialogOpen = false;
   }
 
-  async function loadSettings() {}
+  async function loadSettings() {
+    try {
+      const loadedSettings = await GetSettings();
+      settings = loadedSettings;
+    } catch (error) {
+      console.error("Failed to load settings:", error);
+    }
+  }
 
   // Load settings on mount
   $effect(() => {
@@ -55,7 +78,7 @@
               id="mod-folder"
               type="text"
               placeholder="Select mod folder..."
-              value={assettoCorsaModFolder}
+              value={settings.mods_path}
               class="flex-1"
               readonly
             />
@@ -74,7 +97,7 @@
               id="root-folder"
               type="text"
               placeholder="Select root folder..."
-              value={assettoCorsaRootFolder}
+              value={settings.assetto_corsa_path}
               class="flex-1"
               readonly
             />
@@ -99,9 +122,9 @@
         <div class="flex items-center space-x-3">
           <Checkbox
             id="automatic-profiles"
-            checked={automaticProfiles}
+            checked={settings.automatic_profiles}
             onCheckedChange={(checked) =>
-              (automaticProfiles = checked as boolean)}
+              (settings.automatic_profiles = checked as boolean)}
           />
           <Label
             for="automatic-profiles"
