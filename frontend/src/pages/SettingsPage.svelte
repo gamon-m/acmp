@@ -8,7 +8,11 @@
   import { Label } from "$lib/components/ui/label/index";
   import { Separator } from "$lib/components/ui/separator/index";
 
-  import { GetSettings, SaveSettings } from "../../wailsjs/go/Main/App";
+  import {
+    GetSettings,
+    SaveSettings,
+    OpenFolderDialog,
+  } from "../../wailsjs/go/Main/App";
 
   interface Settings {
     assetto_corsa_path: string;
@@ -24,9 +28,29 @@
 
   let resetDialogOpen = $state(false);
 
-  async function selectModFolder() {}
+  async function selectModFolder() {
+    try {
+      const selectedPath = await OpenFolderDialog("mods");
+      if (selectedPath) {
+        settings.mods_path = selectedPath;
+      }
+    } catch (error) {
+      console.error("Failed to select mod folder:", error);
+      alert("Failed to select mod folder. Please try again.");
+    }
+  }
 
-  async function selectRootFolder() {}
+  async function selectRootFolder() {
+    try {
+      const selectedPath = await OpenFolderDialog("Assetto Corsa root");
+      if (selectedPath) {
+        settings.assetto_corsa_path = selectedPath;
+      }
+    } catch (error) {
+      console.error("Failed to select root folder:", error);
+      alert("Failed to select root folder. Please try again.");
+    }
+  }
 
   async function saveSettings() {
     try {
@@ -64,15 +88,15 @@
     <!-- Assetto Corsa Folders -->
     <Card.Root>
       <Card.Header>
-        <Card.Title>Assetto Corsa Folders</Card.Title>
+        <Card.Title>Assetto Corsa Paths</Card.Title>
         <Card.Description>
-          Configure the paths to your Assetto Corsa installation
+          Configure the paths to your Assetto Corsa installation and mods folder
         </Card.Description>
       </Card.Header>
       <Card.Content class="space-y-4">
         <!-- Mod Folder -->
         <div class="space-y-2">
-          <Label for="mod-folder">Assetto Corsa Mod Folder</Label>
+          <Label for="mod-folder">Mods folder</Label>
           <div class="flex gap-2">
             <Input
               id="mod-folder"
@@ -91,7 +115,7 @@
 
         <!-- Root Folder -->
         <div class="space-y-2">
-          <Label for="root-folder">Assetto Corsa Root Folder</Label>
+          <Label for="root-folder">Assetto Corsa root folder</Label>
           <div class="flex gap-2">
             <Input
               id="root-folder"
@@ -115,7 +139,7 @@
       <Card.Header>
         <Card.Title>Profile Settings</Card.Title>
         <Card.Description>
-          Configure automatic profile management
+          Configure additional profile settings
         </Card.Description>
       </Card.Header>
       <Card.Content>

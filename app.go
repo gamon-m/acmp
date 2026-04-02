@@ -1,6 +1,11 @@
 package main
 
-import "context"
+import (
+	"context"
+	"fmt"
+
+	"github.com/wailsapp/wails/v2/pkg/runtime"
+)
 
 // App struct
 type App struct {
@@ -47,4 +52,9 @@ func (a *App) SaveSettings(settings Settings) error {
 
 	a.settings = settings
 	return nil
+}
+
+func (a *App) OpenFolderDialog(folder string) (string, error) {
+	folder, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{Title: fmt.Sprintf("Select %s folder", folder)})
+	return folder, err
 }

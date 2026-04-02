@@ -4,4 +4,6 @@ import {main} from '../models';
 
 export function GetSettings():Promise<main.Settings>;
 
+export function OpenFolderDialog(arg1:string):Promise<string>;
+
 export function SaveSettings(arg1:main.Settings):Promise<void>;

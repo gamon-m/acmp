@@ -6,6 +6,10 @@ export function GetSettings() {
   return window['go']['main']['App']['GetSettings']();
 }
 
+export function OpenFolderDialog(arg1) {
+  return window['go']['main']['App']['OpenFolderDialog'](arg1);
+}
+
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }
