@@ -13,6 +13,7 @@
   import * as Select from "$lib/components/ui/select/index";
   import SortButton from "../components/SortButton.svelte";
   import AddProfileDialog from "../components/AddProfileDialog.svelte";
+  import EditProfileDialog from "../components/EditProfileDialog.svelte";
 
   interface Profile {
     id: string;
@@ -134,9 +135,20 @@
     console.log("deleting profile:", profile.name);
   }
 
+  let editDialogOpen = $state(false);
+  let editingProfile = $state<Profile | null>(null);
+
   function editProfile(profile: Profile) {
-    console.log("deleting profile:", profile.name);
+    editingProfile = profile;
+    editDialogOpen = true;
   }
+
+  // Reset editingProfile when dialog closes
+  $effect(() => {
+    if (!editDialogOpen) {
+      editingProfile = null;
+    }
+  });
 </script>
 
 <!-- Main content -->
@@ -179,6 +191,15 @@
       <AddProfileDialog />
     </div>
   </div>
+
+  <!-- Edit profile dialog -->
+  <EditProfileDialog
+    bind:open={editDialogOpen}
+    profileId={editingProfile?.id ?? ""}
+    initialProfileName={editingProfile?.name ?? ""}
+    initialCategory={editingProfile?.category ?? "Cars"}
+    preselectedMods={new Set()}
+  />
 
   <!-- Main table -->
   <div class="flex flex-col max-h-[calc(100vh-200px)]">

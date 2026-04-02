@@ -8,6 +8,15 @@
   import { Plus, Search } from "@lucide/svelte";
   import SortButton from "./SortButton.svelte";
 
+  let {
+    editMode = false,
+    profileId = "",
+    initialProfileName = "",
+    initialCategory = "Cars",
+    preselectedMods = new Set<string>(),
+    open = $bindable(false),
+  } = $props();
+
   let profileName = $state<string>("");
   let selectedMods = $state<Set<string>>(new Set());
 
@@ -252,25 +261,42 @@
     sortField = "name";
     sortDirection = "asc";
     selectedMods = new Set();
+    open = false;
+  }
+
+  function initForm() {
+    profileName = initialProfileName;
+    selectedCategory = initialCategory;
+    selectedMods = new Set(preselectedMods);
+    searchQuery = "";
+    sortField = "name";
+    sortDirection = "asc";
+    open = true;
+  }
+
+  function openEdit() {
+    initForm();
   }
 </script>
 
-<Dialog.Root
+<Dialog.Root bind:open
   onOpenChange={(open) => {
     if (!open) resetForm();
   }}
 >
   <form>
-    <Dialog.Trigger>
-      <Button class="h-8 min-w-30">
-        <Plus class="size-4 mr-2" />
-        Add Profile
-      </Button>
-    </Dialog.Trigger>
+    {#if !editMode}
+      <Dialog.Trigger>
+        <Button class="h-8 min-w-30">
+          <Plus class="size-4 mr-2" />
+          Add Profile
+        </Button>
+      </Dialog.Trigger>
+    {/if}
     <Dialog.Content class="sm:max-w-150">
       <Dialog.Header>
-        <Dialog.Title>Add Profile</Dialog.Title>
-        <Dialog.Description>Create new mod profile.</Dialog.Description>
+        <Dialog.Title>{editMode ? "Edit Profile" : "Add Profile"}</Dialog.Title>
+        <Dialog.Description>{editMode ? "Save changes to profile." : "Create new mod profile."}</Dialog.Description>
       </Dialog.Header>
       <div class="flex items-center gap-2">
         <div class="grid flex-1 gap-4">
@@ -396,7 +422,7 @@
             >
               Cancel
             </Dialog.Close>
-            <Button type="submit">Create</Button>
+            <Button type="submit">{editMode ? "Save" : "Create"}</Button>
           </Dialog.Footer>
         </div>
       </div>
