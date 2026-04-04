@@ -2,7 +2,10 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
+	"os"
+	"path/filepath"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -11,6 +14,7 @@ import (
 type App struct {
 	ctx      context.Context
 	settings Settings
+	db       *sql.DB
 }
 
 // NewApp creates a new App application struct
@@ -27,6 +31,11 @@ func (a *App) startup(ctx context.Context) {
 		panic(err)
 	}
 	a.settings = settings
+
+	a.db, err = getDatabase()
+	if err != nil {
+		panic(err)
+	}
 }
 
 // domReady is called after front-end resources have been loaded
@@ -57,4 +66,33 @@ func (a *App) SaveSettings(settings Settings) error {
 func (a *App) OpenFolderDialog(folder string) (string, error) {
 	folder, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{Title: fmt.Sprintf("Select %s folder", folder)})
 	return folder, err
+}
+
+func getAppDataPath() (string, error) {
+	userDataDir, err := os.UserConfigDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(userDataDir, "acmp"), nil
+}
+
+func getDatabase() (*sql.DB, error) {
+	appDataPath, err := getAppDataPath()
+	if err != nil {
+		return nil, err
+	}
+
+	dbPath := filepath.Join(appDataPath, "acmp.db")
+	db, err := newDatabase(dbPath)
+	if err != nil {
+		return nil, err
+	}
+
+	err = initSchema(db)
+	if err != nil {
+		return nil, err
+	}
+
+	return db, nil
 }
