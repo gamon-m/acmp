@@ -1,21 +1,16 @@
 package main
 
 import (
+	"acmp/models"
 	"encoding/json"
 	"os"
 	"path/filepath"
 )
 
-type Settings struct {
-	AssettoCorsaPath  string `json:"assetto_corsa_path"`
-	ModsPath          string `json:"mods_path"`
-	AutomaticProfiles bool   `json:"automatic_profiles"`
-}
-
-func getSettings() (Settings, error) {
+func getSettings() (models.Settings, error) {
 	settingsPath, err := getSettingsPath()
 	if err != nil {
-		return Settings{}, err
+		return models.Settings{}, err
 	}
 
 	settingsData, err := os.ReadFile(settingsPath)
@@ -23,23 +18,23 @@ func getSettings() (Settings, error) {
 		if os.IsNotExist(err) {
 			err = createSettingsFile()
 			if err != nil {
-				return Settings{}, err
+				return models.Settings{}, err
 			}
 			return getDefaultSettings(), nil
 		}
-		return Settings{}, err
+		return models.Settings{}, err
 	}
 
-	var settings Settings
+	var settings models.Settings
 	err = json.Unmarshal(settingsData, &settings)
 	if err != nil {
-		return Settings{}, err
+		return models.Settings{}, err
 	}
 
 	return settings, nil
 }
 
-func saveSettings(settings Settings) error {
+func saveSettings(settings models.Settings) error {
 	settingsPath, err := getSettingsPath()
 	if err != nil {
 		return err
@@ -75,8 +70,8 @@ func createSettingsFile() error {
 	return os.WriteFile(settingsPath, settingsData, os.ModePerm)
 }
 
-func getDefaultSettings() Settings {
-	return Settings{
+func getDefaultSettings() models.Settings {
+	return models.Settings{
 		AssettoCorsaPath:  "",
 		ModsPath:          "",
 		AutomaticProfiles: false,

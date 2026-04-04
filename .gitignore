@@ -4,3 +4,4 @@ frontend/dist
 *.exe
 *.test.go
 *.vscode
+/test

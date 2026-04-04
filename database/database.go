@@ -1,4 +1,4 @@
-package main
+package database
 
 import (
 	"database/sql"
@@ -8,7 +8,7 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-func newDatabase(dbPath string) (*sql.DB, error) {
+func NewDatabase(dbPath string) (*sql.DB, error) {
 	dir := filepath.Dir(dbPath)
 	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
 		return nil, err
@@ -26,7 +26,7 @@ func newDatabase(dbPath string) (*sql.DB, error) {
 	return db, nil
 }
 
-func initSchema(db *sql.DB) error {
+func InitSchema(db *sql.DB) error {
 	schema := `
 	CREATE TABLE IF NOT EXISTS mods (
 		dir          TEXT PRIMARY KEY,

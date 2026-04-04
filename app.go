@@ -1,6 +1,8 @@
 package main
 
 import (
+	"acmp/database"
+	"acmp/models"
 	"context"
 	"database/sql"
 	"fmt"
@@ -13,7 +15,7 @@ import (
 // App struct
 type App struct {
 	ctx      context.Context
-	settings Settings
+	settings models.Settings
 	db       *sql.DB
 }
 
@@ -49,11 +51,11 @@ func (a *App) beforeClose(ctx context.Context) (prevent bool) {
 // shutdown is called at application termination
 func (a *App) shutdown(ctx context.Context) {}
 
-func (a *App) GetSettings() Settings {
+func (a *App) GetSettings() models.Settings {
 	return a.settings
 }
 
-func (a *App) SaveSettings(settings Settings) error {
+func (a *App) SaveSettings(settings models.Settings) error {
 	err := saveSettings(settings)
 	if err != nil {
 		return err
@@ -84,12 +86,12 @@ func getDatabase() (*sql.DB, error) {
 	}
 
 	dbPath := filepath.Join(appDataPath, "acmp.db")
-	db, err := newDatabase(dbPath)
+	db, err := database.NewDatabase(dbPath)
 	if err != nil {
 		return nil, err
 	}
 
-	err = initSchema(db)
+	err = database.InitSchema(db)
 	if err != nil {
 		return nil, err
 	}
