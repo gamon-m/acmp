@@ -126,58 +126,69 @@
   </div>
 
   <!-- Table -->
-  <div class="max-h-[calc(100vh-200px)] overflow-y-auto">
-    <Table.Root>
-      <Table.Header class="bg-background hover:bg-background sticky top-0 z-10">
-        <Table.Row class="hover:bg-background">
-          <Table.Head class="w-[60%]">
-            <SortButton
-              displayName="MOD NAME"
-              catName="name"
-              {toggleSort}
-              {sortField}
-              {sortDirection}
-            ></SortButton>
-          </Table.Head>
-          <Table.Head class="w-[20%]">
-            <div class="flex justify-center">
+  <div class="bg-input/30">
+    <!-- Header Table (non-scrollable) -->
+    <div class="bg-background">
+      <Table.Root>
+        <Table.Header>
+          <Table.Row class="hover:bg-transparent">
+            <Table.Head class="w-[60%]">
               <SortButton
-                displayName="&emsp;CATEGORY"
-                catName="category"
+                displayName="MOD NAME"
+                catName="name"
                 {toggleSort}
                 {sortField}
                 {sortDirection}
               ></SortButton>
-            </div>
-          </Table.Head>
-          <Table.Head class="w-[20%]">
-            <div class="flex justify-center">
-              <SortButton
-                displayName="&emsp;ACTIVE"
-                catName="active"
-                {toggleSort}
-                {sortField}
-                {sortDirection}
-              ></SortButton>
-            </div>
-          </Table.Head>
-        </Table.Row>
-      </Table.Header>
-      <Table.Body class="bg-input/30">
-        {#each getFilteredMods() as mod}
-          <Table.Row
-            class="border-l-4! {mod.active ? ' border-l-primary' : ''} "
-          >
-            <Table.Cell class="w-[60%] border-r">{mod.name}</Table.Cell>
-            <Table.Cell class="w-[20%] border-r text-center"
-              >{mod.category}</Table.Cell
-            >
-            <Table.Cell class="w-[20%] text-center"
-              >{mod.active ? "Active" : "Inactive"}</Table.Cell
-            >
+            </Table.Head>
+            <Table.Head class="w-[20%]">
+              <div class="flex justify-center">
+                <SortButton
+                  displayName="CATEGORY"
+                  catName="category"
+                  {toggleSort}
+                  {sortField}
+                  {sortDirection}
+                ></SortButton>
+              </div>
+            </Table.Head>
+            <Table.Head class="w-[20%]">
+              <div class="flex justify-center">
+                <SortButton
+                  displayName="ACTIVE"
+                  catName="active"
+                  {toggleSort}
+                  {sortField}
+                  {sortDirection}
+                ></SortButton>
+              </div>
+            </Table.Head>
           </Table.Row>
-        {/each}
-      </Table.Body>
-    </Table.Root>
+        </Table.Header>
+      </Table.Root>
+    </div>
+
+    <!-- Scrollable Body Table -->
+    <div
+      class="max-h-[calc(100vh-280px)] overflow-y-auto border border-input border-t-0"
+    >
+      <Table.Root>
+        <Table.Body>
+          {#each getFilteredMods() as mod}
+            <Table.Row
+              class="border-l-4! {mod.active ? ' border-l-primary' : ''} "
+            >
+              <Table.Cell class="w-[60%] border-r">{mod.name}</Table.Cell>
+              <Table.Cell class="w-[20%] border-r text-center"
+                >{mod.category}</Table.Cell
+              >
+              <Table.Cell class="w-[20%] text-center"
+                >{mod.active ? "Active" : "Inactive"}</Table.Cell
+              >
+            </Table.Row>
+          {/each}
+        </Table.Body>
+      </Table.Root>
+    </div>
   </div>
 </div>
