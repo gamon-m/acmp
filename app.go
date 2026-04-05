@@ -4,7 +4,6 @@ import (
 	"acmp/database"
 	"acmp/models"
 	"context"
-	"database/sql"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -16,7 +15,7 @@ import (
 type App struct {
 	ctx      context.Context
 	settings models.Settings
-	db       *sql.DB
+	data     database.Data
 }
 
 // NewApp creates a new App application struct
@@ -34,10 +33,11 @@ func (a *App) startup(ctx context.Context) {
 	}
 	a.settings = settings
 
-	a.db, err = getDatabase()
+	data, err := a.loadData()
 	if err != nil {
 		panic(err)
 	}
+	a.data = *data
 }
 
 // domReady is called after front-end resources have been loaded
@@ -65,6 +65,10 @@ func (a *App) SaveSettings(settings models.Settings) error {
 	return nil
 }
 
+func (a *App) GetData() database.Data {
+	return a.data
+}
+
 func (a *App) OpenFolderDialog(folder string) (string, error) {
 	folder, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{Title: fmt.Sprintf("Select %s folder", folder)})
 	return folder, err
@@ -79,7 +83,7 @@ func getAppDataPath() (string, error) {
 	return filepath.Join(userDataDir, "acmp"), nil
 }
 
-func getDatabase() (*sql.DB, error) {
+func (a *App) loadData() (*database.Data, error) {
 	appDataPath, err := getAppDataPath()
 	if err != nil {
 		return nil, err
@@ -96,5 +100,18 @@ func getDatabase() (*sql.DB, error) {
 		return nil, err
 	}
 
-	return db, nil
+	data := &database.Data{}
+	err = data.ScanMods(&a.settings)
+	if err != nil {
+		return nil, err
+	}
+
+	err = data.UpdateDatabase(db)
+	if err != nil {
+		return nil, err
+	}
+
+	data.Mods = database.GetModsFromDatabase(db)
+
+	return data, nil
 }

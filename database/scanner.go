@@ -5,6 +5,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type Data struct {
@@ -27,6 +28,7 @@ func (d *Data) ScanMods(settings *models.Settings) error {
 
 		if dir.Name() == "tracks" || dir.Name() == "cars" {
 			category = dir.Name()
+			category = strings.ToUpper(category[:1]) + category[1:]
 		}
 
 		files, err := os.ReadDir(path)

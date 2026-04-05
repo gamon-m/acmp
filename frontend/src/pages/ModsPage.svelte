@@ -5,6 +5,7 @@
   import { Input } from "$lib/components/ui/input/index";
   import * as Table from "$lib/components/ui/table/index";
   import SortButton from "../components/SortButton.svelte";
+  import { GetData } from "../../wailsjs/go/Main/App";
 
   let searchQuery = $state("");
   let selectedCategory = $state<string>("All");
@@ -13,78 +14,15 @@
   const categories = ["All", "Cars", "Tracks"];
 
   interface Mod {
-    id: string;
+    dir: string;
     name: string;
     category: string;
     active: boolean;
+    inProfile: boolean;
+    lastModified: string;
   }
 
-  const mockMods: Mod[] = $state([
-    { id: "1", name: "esda_mk5_public", category: "Cars", active: false },
-    { id: "2", name: "alfa_romeo_156", category: "Cars", active: false },
-    { id: "3", name: "ariel_atom_500", category: "Cars", active: true },
-    { id: "4", name: "acu_okutama-circuit", category: "Tracks", active: true },
-    { id: "5", name: "sdv_bmw_e46_330ci_rhd", category: "Cars", active: true },
-    {
-      id: "6",
-      name: "shuto_revival_project_beta",
-      category: "Tracks",
-      active: false,
-    },
-    { id: "7", name: "swarm_fluffs_mx5", category: "Cars", active: true },
-    { id: "8", name: "The Springs", category: "Tracks", active: false },
-    {
-      id: "9",
-      name: "wdts_toyota_cresta_jzx100",
-      category: "Cars",
-      active: true,
-    },
-    {
-      id: "10",
-      name: "fumi_cp_bmw_e36_330i_sedan",
-      category: "Cars",
-      active: true,
-    },
-    { id: "11", name: "union_island", category: "Tracks", active: true },
-    {
-      id: "12",
-      name: "pcp2_fumi_cp24_lex_is200_v8",
-      category: "Cars",
-      active: false,
-    },
-    { id: "13", name: "esda_mk5_public", category: "Cars", active: false },
-    { id: "14", name: "alfa_romeo_156", category: "Cars", active: false },
-    { id: "15", name: "ariel_atom_500", category: "Cars", active: true },
-    { id: "16", name: "acu_okutama-circuit", category: "Tracks", active: true },
-    { id: "17", name: "sdv_bmw_e46_330ci_rhd", category: "Cars", active: true },
-    {
-      id: "18",
-      name: "shuto_revival_project_beta",
-      category: "Tracks",
-      active: false,
-    },
-    { id: "19", name: "swarm_fluffs_mx5", category: "Cars", active: true },
-    { id: "20", name: "The Springs", category: "Tracks", active: false },
-    {
-      id: "21",
-      name: "wdts_toyota_cresta_jzx100",
-      category: "Cars",
-      active: true,
-    },
-    {
-      id: "22",
-      name: "fumi_cp_bmw_e36_330i_sedan",
-      category: "Cars",
-      active: true,
-    },
-    { id: "23", name: "union_island", category: "Tracks", active: true },
-    {
-      id: "24",
-      name: "pcp2_fumi_cp24_lex_is200_v8",
-      category: "Cars",
-      active: false,
-    },
-  ]);
+  let mods = $state<Mod[]>([]);
 
   function toggleSort(field: "name" | "category" | "active") {
     if (sortField === field) {
@@ -96,12 +34,13 @@
   }
 
   function getFilteredMods() {
-    let result = mockMods.filter((m) => {
+    let result = mods.filter((m) => {
       const matchesSearch = m.name
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
       const matchesCategory =
-        selectedCategory === "All" || m.category === selectedCategory;
+        selectedCategory === "All" ||
+        m.category.toLowerCase() === selectedCategory.toLowerCase();
       return matchesSearch && matchesCategory;
     });
 
@@ -121,6 +60,27 @@
 
     return result;
   }
+
+  async function loadMods() {
+    try {
+      const data = await GetData();
+      mods = data.Mods.map((m) => ({
+        dir: m.Dir,
+        name: m.Name,
+        category: m.Category,
+        active: m.Active,
+        inProfile: m.InProfile,
+        lastModified: m.LastModified,
+      }));
+    } catch (error) {
+      console.error("Failed to load mods:", error);
+      alert("Failed to load mods. Please try again.");
+    }
+  }
+
+  $effect(() => {
+    loadMods();
+  });
 </script>
 
 <div class="p-6 mx-50">
@@ -209,7 +169,9 @@
             class="border-l-4! {mod.active ? ' border-l-primary' : ''} "
           >
             <Table.Cell class="w-[60%] border-r">{mod.name}</Table.Cell>
-            <Table.Cell class="w-[20%] border-r text-center">{mod.category}</Table.Cell>
+            <Table.Cell class="w-[20%] border-r text-center"
+              >{mod.category}</Table.Cell
+            >
             <Table.Cell class="w-[20%] text-center"
               >{mod.active ? "Active" : "Inactive"}</Table.Cell
             >

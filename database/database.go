@@ -1,6 +1,7 @@
 package database
 
 import (
+	"acmp/models"
 	"database/sql"
 	"os"
 	"path/filepath"
@@ -60,4 +61,132 @@ func InitSchema(db *sql.DB) error {
 
 	_, err := db.Exec(schema)
 	return err
+}
+
+func (d *Data) UpdateDatabase(db *sql.DB) error {
+	databaseMods := GetModsFromDatabase(db)
+	var modsToAdd []models.Mod
+	var modsToUpdate []models.Mod
+	var modsToDelete []models.Mod
+
+	for _, scannedMod := range d.Mods {
+		found := false
+		for _, dbMod := range databaseMods {
+			if scannedMod.Dir == dbMod.Dir {
+				found = true
+				if scannedMod.LastModified != dbMod.LastModified ||
+					scannedMod.Active != dbMod.Active ||
+					scannedMod.InProfile != dbMod.InProfile ||
+					scannedMod.Name != dbMod.Name {
+					modsToUpdate = append(modsToUpdate, scannedMod)
+				}
+				break
+			}
+		}
+		if !found {
+			modsToAdd = append(modsToAdd, scannedMod)
+		}
+	}
+
+	for _, dbMod := range databaseMods {
+		found := false
+		for _, scannedMod := range d.Mods {
+			if dbMod.Dir == scannedMod.Dir {
+				found = true
+				break
+			}
+		}
+		if !found {
+			modsToDelete = append(modsToDelete, dbMod)
+		}
+	}
+
+	insertMods(db, modsToAdd)
+	updateMods(db, modsToUpdate)
+	deleteMods(db, modsToDelete)
+
+	return nil
+}
+
+func GetModsFromDatabase(db *sql.DB) []models.Mod {
+	rows, err := db.Query("SELECT dir, mod_name, category, active, inProfile, lastModified FROM mods")
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var mods []models.Mod
+	for rows.Next() {
+		var mod models.Mod
+		err := rows.Scan(&mod.Dir, &mod.Name, &mod.Category, &mod.Active, &mod.InProfile, &mod.LastModified)
+		if err != nil {
+			continue
+		}
+		mods = append(mods, mod)
+	}
+	return mods
+}
+
+func insertMods(db *sql.DB, mods []models.Mod) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	statement, err := tx.Prepare(`INSERT INTO mods (dir, mod_name, category, active, inProfile, lastModified)
+	 VALUES (?, ?, ?, ?, ?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	for _, mod := range mods {
+		_, err := statement.Exec(mod.Dir, mod.Name, mod.Category, mod.Active, mod.InProfile, mod.LastModified)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+func updateMods(db *sql.DB, mods []models.Mod) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	statement, err := tx.Prepare(`UPDATE mods SET mod_name = ?, category = ?, active = ?, inProfile = ?, lastModified = ? WHERE dir = ?`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	for _, mod := range mods {
+		_, err := statement.Exec(mod.Name, mod.Category, mod.Active, mod.InProfile, mod.LastModified, mod.Dir)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+func deleteMods(db *sql.DB, mods []models.Mod) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	statement, err := tx.Prepare(`DELETE FROM mods WHERE dir = ?`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	for _, mod := range mods {
+		_, err := statement.Exec(mod.Dir)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }

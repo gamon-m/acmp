@@ -8,6 +8,8 @@
   import { Plus, Search } from "@lucide/svelte";
   import SortButton from "./SortButton.svelte";
 
+  import { GetData } from "../../wailsjs/go/Main/App";
+
   let {
     editMode = false,
     profileId = "",
@@ -27,191 +29,46 @@
   let hideUsedMods = $state<boolean>(false);
 
   interface Mod {
-    id: string;
+    dir: string;
     name: string;
     category: string;
+    active: boolean;
     inProfile: boolean;
     lastModified: string;
   }
 
-  const mockMods: Mod[] = $state([
-    {
-      id: "1",
-      name: "esda_mk5_public",
-      category: "Cars",
-      inProfile: false,
-      lastModified: "2024-05-28",
-    },
-    {
-      id: "2",
-      name: "alfa_romeo_156",
-      category: "Cars",
-      inProfile: false,
-      lastModified: "2024-06-03",
-    },
-    {
-      id: "3",
-      name: "ariel_atom_500",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-05-15",
-    },
-    {
-      id: "4",
-      name: "acu_okutama-circuit",
-      category: "Tracks",
-      inProfile: true,
-      lastModified: "2024-06-10",
-    },
-    {
-      id: "5",
-      name: "sdv_bmw_e46_330ci_rhd",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-05-22",
-    },
-    {
-      id: "6",
-      name: "shuto_revival_project_beta",
-      category: "Tracks",
-      inProfile: false,
-      lastModified: "2024-06-05",
-    },
-    {
-      id: "7",
-      name: "swarm_fluffs_mx5",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-05-19",
-    },
-    {
-      id: "8",
-      name: "The Springs",
-      category: "Tracks",
-      inProfile: false,
-      lastModified: "2024-06-12",
-    },
-    {
-      id: "9",
-      name: "wdts_toyota_cresta_jzx100",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-05-25",
-    },
-    {
-      id: "10",
-      name: "fumi_cp_bmw_e36_330i_sedan",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-06-01",
-    },
-    {
-      id: "11",
-      name: "union_island",
-      category: "Tracks",
-      inProfile: true,
-      lastModified: "2024-05-30",
-    },
-    {
-      id: "12",
-      name: "pcp2_fumi_cp24_lex_is200_v8",
-      category: "Cars",
-      inProfile: false,
-      lastModified: "2024-06-07",
-    },
-    {
-      id: "13",
-      name: "esda_mk5_public",
-      category: "Cars",
-      inProfile: false,
-      lastModified: "2024-05-28",
-    },
-    {
-      id: "14",
-      name: "alfa_romeo_156",
-      category: "Cars",
-      inProfile: false,
-      lastModified: "2024-06-03",
-    },
-    {
-      id: "15",
-      name: "ariel_atom_500",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-05-15",
-    },
-    {
-      id: "16",
-      name: "acu_okutama-circuit",
-      category: "Tracks",
-      inProfile: true,
-      lastModified: "2024-06-10",
-    },
-    {
-      id: "17",
-      name: "sdv_bmw_e46_330ci_rhd",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-05-22",
-    },
-    {
-      id: "18",
-      name: "shuto_revival_project_beta",
-      category: "Tracks",
-      inProfile: false,
-      lastModified: "2024-06-05",
-    },
-    {
-      id: "19",
-      name: "swarm_fluffs_mx5",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-05-19",
-    },
-    {
-      id: "20",
-      name: "The Springs",
-      category: "Tracks",
-      inProfile: false,
-      lastModified: "2024-06-12",
-    },
-    {
-      id: "21",
-      name: "wdts_toyota_cresta_jzx100",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-05-25",
-    },
-    {
-      id: "22",
-      name: "fumi_cp_bmw_e36_330i_sedan",
-      category: "Cars",
-      inProfile: true,
-      lastModified: "2024-06-01",
-    },
-    {
-      id: "23",
-      name: "union_island",
-      category: "Tracks",
-      inProfile: true,
-      lastModified: "2024-05-30",
-    },
-    {
-      id: "24",
-      name: "pcp2_fumi_cp24_lex_is200_v8",
-      category: "Cars",
-      inProfile: false,
-      lastModified: "2024-06-07",
-    },
-  ]);
+  let mods = $state<Mod[]>([]);
+
+  async function loadMods() {
+    try {
+      const data = await GetData();
+      mods = data.Mods.map((m) => ({
+        dir: m.Dir,
+        name: m.Name,
+        category: m.Category,
+        active: m.Active,
+        inProfile: m.InProfile,
+        lastModified: m.LastModified,
+      }));
+    } catch (error) {
+      console.error("Failed to load mods:", error);
+      alert("Failed to load mods. Please try again.");
+    }
+  }
+
+  function getFormattedDate(dateTimeStr: string) {
+    const date = new Date(dateTimeStr);
+    return date.toLocaleDateString();
+  }
 
   function getFilteredMods() {
-    let result = mockMods.filter((m) => {
+    let result = mods.filter((m) => {
       const matchesSearch = m.name
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
       const matchesCategory =
-        selectedCategory === "All" || m.category === selectedCategory;
+        selectedCategory === "All" ||
+        m.category.toLowerCase() === selectedCategory.toLowerCase();
       const notInProfiles = !hideUsedMods || !m.inProfile;
       return matchesSearch && matchesCategory && notInProfiles;
     });
@@ -277,9 +134,14 @@
   function openEdit() {
     initForm();
   }
+
+  $effect(() => {
+    loadMods();
+  });
 </script>
 
-<Dialog.Root bind:open
+<Dialog.Root
+  bind:open
   onOpenChange={(open) => {
     if (!open) resetForm();
   }}
@@ -296,7 +158,11 @@
     <Dialog.Content class="sm:max-w-150">
       <Dialog.Header>
         <Dialog.Title>{editMode ? "Edit Profile" : "Add Profile"}</Dialog.Title>
-        <Dialog.Description>{editMode ? "Save changes to profile." : "Create new mod profile."}</Dialog.Description>
+        <Dialog.Description
+          >{editMode
+            ? "Save changes to profile."
+            : "Create new mod profile."}</Dialog.Description
+        >
       </Dialog.Header>
       <div class="flex items-center gap-2">
         <div class="grid flex-1 gap-4">
@@ -394,14 +260,14 @@
                 <Table.Root>
                   <Table.Body class="border-b border-input">
                     {#each getFilteredMods() as mod}
-                      <Table.Row onclick={() => toggleSelection(mod.id)}>
+                      <Table.Row onclick={() => toggleSelection(mod.dir)}>
                         <Table.Cell class="w-[60%]">{mod.name}</Table.Cell>
                         <Table.Cell class="w-[30%] text-center"
-                          >{mod.lastModified}</Table.Cell
+                          >{getFormattedDate(mod.lastModified)}</Table.Cell
                         >
                         <Table.Cell class="w-[10%]">
                           <Checkbox
-                            checked={selectedMods.has(mod.id)}
+                            checked={selectedMods.has(mod.dir)}
                             readonly
                           />
                         </Table.Cell>

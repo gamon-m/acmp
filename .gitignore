@@ -5,3 +5,4 @@ frontend/dist
 *.test.go
 *.vscode
 /test
+*PLAN.md
