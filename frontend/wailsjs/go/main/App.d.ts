@@ -16,3 +16,5 @@ export function RefreshData():Promise<void>;
 export function SaveProfile(arg1:models.ProfileRequest):Promise<void>;
 
 export function SaveSettings(arg1:models.Settings):Promise<void>;
+
+export function UpdateProfiles(arg1:Array<models.Profile>):Promise<void>;

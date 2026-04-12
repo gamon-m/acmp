@@ -188,3 +188,39 @@ func (a *App) DeleteProfile(profileId int) error {
 	}
 	return a.RefreshData()
 }
+
+func (a *App) UpdateProfiles(profiles []models.Profile) error {
+	dbPath, err := getDbPath()
+	if err != nil {
+		return err
+	}
+
+	db, err := database.NewDatabase(dbPath)
+	if err != nil {
+		return err
+	}
+
+	var profilesToActivate []models.Profile
+	for _, profile := range profiles {
+		if profile.Active {
+			profilesToActivate = append(profilesToActivate, profile)
+		}
+	}
+
+	var profilesToDeactivate []models.Profile
+	for _, profile := range profiles {
+		if !profile.Active {
+			profilesToDeactivate = append(profilesToDeactivate, profile)
+		}
+	}
+
+	err = database.ActivateProfiles(db, profilesToActivate)
+	if err != nil {
+		return err
+	}
+	err = database.DeactivateProfiles(db, profilesToDeactivate)
+	if err != nil {
+		return err
+	}
+	return a.RefreshData()
+}

@@ -74,11 +74,15 @@ func (d *Data) UpdateDatabase(db *sql.DB) error {
 		for _, dbMod := range databaseMods {
 			if scannedMod.Dir == dbMod.Dir {
 				found = true
-				if scannedMod.LastModified != dbMod.LastModified ||
-					scannedMod.Active != dbMod.Active ||
-					scannedMod.InProfile != dbMod.InProfile ||
-					scannedMod.Name != dbMod.Name {
-					modsToUpdate = append(modsToUpdate, scannedMod)
+				if scannedMod.LastModified != dbMod.LastModified {
+					modsToUpdate = append(modsToUpdate, models.Mod{
+						Dir:          scannedMod.Dir,
+						Name:         scannedMod.Name,
+						Category:     scannedMod.Category,
+						Active:       dbMod.Active,
+						InProfile:    dbMod.InProfile,
+						LastModified: scannedMod.LastModified,
+					})
 				}
 				break
 			}
@@ -246,6 +250,93 @@ func DeleteProfile(db *sql.DB, profileId int) error {
 	return tx.Commit()
 }
 
+func ActivateProfiles(db *sql.DB, profiles []models.Profile) error {
+	var mods []string
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	for _, profile := range profiles {
+		modDirs := getModsInProfile(db, profile.Id)
+		mods = append(mods, modDirs...)
+		_, err := tx.Exec(`UPDATE profiles SET active = 1 WHERE id = ?`, profile.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, modDir := range mods {
+		_, err := tx.Exec(`UPDATE mods SET active = 1 WHERE dir = ?`, modDir)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+func DeactivateProfiles(db *sql.DB, profiles []models.Profile) error {
+	var mods []string
+
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	for _, profile := range profiles {
+		modDirs := getModsInProfile(db, profile.Id)
+		for _, modDir := range modDirs {
+			if modInOtherActiveProfiles(db, modDir, profile.Id) {
+				continue
+			}
+			mods = append(mods, modDir)
+		}
+		_, err := tx.Exec(`UPDATE profiles SET active = 0 WHERE id = ?`, profile.Id)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, modDir := range mods {
+		_, err := tx.Exec(`UPDATE mods SET active = 0 WHERE dir = ?`, modDir)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+func modInOtherActiveProfiles(db *sql.DB, modDir string, profileId int) bool {
+	rows, err := db.Query(`SELECT id FROM profiles WHERE id != ? AND active = 1 AND id IN (SELECT profile_id FROM mod_profiles WHERE mod_dir = ?)`, profileId, modDir)
+	if err != nil {
+		return false
+	}
+	defer rows.Close()
+	return rows.Next()
+}
+
+func getModsInProfile(db *sql.DB, profileId int) []string {
+	rows, err := db.Query(`SELECT mod_dir FROM mod_profiles WHERE profile_id = ?`, profileId)
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var modDirs []string
+	for rows.Next() {
+		var modDir string
+		err := rows.Scan(&modDir)
+		if err != nil {
+			continue
+		}
+		modDirs = append(modDirs, modDir)
+	}
+	return modDirs
+}
+
 func insertMods(db *sql.DB, mods []models.Mod) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -297,6 +388,18 @@ func deleteMods(db *sql.DB, mods []models.Mod) error {
 	defer tx.Rollback()
 
 	statement, err := tx.Prepare(`DELETE FROM mods WHERE dir = ?`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	for _, mod := range mods {
+		_, err := statement.Exec(mod.Dir)
+		if err != nil {
+			return err
+		}
+	}
+
+	statement, err = tx.Prepare(`DELETE FROM mod_profiles WHERE mod_dir = ?`)
 	if err != nil {
 		return err
 	}

@@ -29,3 +29,7 @@ export function SaveProfile(arg1) {
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }
+
+export function UpdateProfiles(arg1) {
+  return window['go']['main']['App']['UpdateProfiles'](arg1);
+}

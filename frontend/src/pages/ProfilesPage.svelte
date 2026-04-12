@@ -5,6 +5,7 @@
     Pencil,
     Trash2,
     EllipsisVertical,
+    Save,
   } from "@lucide/svelte";
   import { onMount } from "svelte";
   import { EventsOn, EventsOff } from "../../wailsjs/runtime/runtime";
@@ -17,14 +18,20 @@
   import AddProfileDialog from "../components/AddProfileDialog.svelte";
   import EditProfileDialog from "../components/EditProfileDialog.svelte";
 
-  import { GetData, DeleteProfile } from "../../wailsjs/go/Main/App";
+  import {
+    GetData,
+    DeleteProfile,
+    UpdateProfiles,
+  } from "../../wailsjs/go/Main/App";
 
   interface Profile {
     id: number;
     name: string;
     category: string;
+    path: string;
     modCount: number;
     active: boolean;
+    auto_created: boolean;
   }
 
   let data = $state<any>(null);
@@ -34,6 +41,14 @@
   let sortDirection = $state<"asc" | "desc">("asc");
 
   let profiles = $state<Profile[]>([]);
+  let originalProfiles = $state<Profile[]>([]);
+
+  let changedProfiles = $derived(
+    profiles.filter((p) => {
+      const updated = originalProfiles.find((o) => o.id === p.id);
+      return updated && updated.active !== p.active;
+    }),
+  );
 
   const categories = ["All", "Cars", "Tracks"];
 
@@ -46,10 +61,13 @@
       profiles = data.Profiles.map((p: any) => ({
         id: p.Id,
         name: p.Name,
+        path: p.Path,
         category: p.Category,
         modCount: getModCount(p.Id),
         active: p.Active,
+        auto_created: p.AutoCreated,
       }));
+      originalProfiles = profiles.map((p) => ({ ...p }));
     } catch (error) {
       console.error("Failed to load profiles:", error);
     }
@@ -123,6 +141,23 @@
   function editProfile(profile: Profile) {
     editingProfile = profile;
     editDialogOpen = true;
+  }
+
+  async function handleSave() {
+    const profileToSave = changedProfiles.map((p) => ({
+      Id: p.id,
+      Name: p.name,
+      Path: p.path,
+      Category: p.category,
+      Active: p.active,
+      AutoCreated: p.auto_created,
+    }));
+
+    try {
+      await UpdateProfiles(profileToSave);
+    } catch (error) {
+      console.error("Failed to update profiles:", error);
+    }
   }
 
   onMount(() => {
@@ -309,3 +344,19 @@
     </div>
   </div>
 </div>
+
+{#if changedProfiles.length > 0}
+  <div
+    class="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-primary border border-border rounded-lg shadow-lg"
+  >
+    <Button
+      onclick={handleSave}
+      variant="default"
+      size="sm"
+      class="cursor-pointer"
+    >
+      <Save class="w-4 h-4 mr-2" />
+      Save Changes
+    </Button>
+  </div>
+{/if}
