@@ -2,9 +2,13 @@ package database
 
 import (
 	"acmp/models"
+	"acmp/symlink"
 	"database/sql"
+	"fmt"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 
 	_ "modernc.org/sqlite"
 )
@@ -63,53 +67,70 @@ func InitSchema(db *sql.DB) error {
 	return err
 }
 
-func (d *Data) UpdateDatabase(db *sql.DB) error {
+func (d *Data) UpdateDatabase(db *sql.DB, assettoCorsaPath string) error {
 	databaseMods := GetModsFromDatabase(db)
+	modProfiles := GetModProfilesFromDatabase(db)
+
 	var modsToAdd []models.Mod
 	var modsToUpdate []models.Mod
 	var modsToDelete []models.Mod
 
+	modsInProfilesSet := make(map[string]bool)
+	for _, mp := range modProfiles {
+		modsInProfilesSet[mp.ModDir] = true
+	}
+
 	for _, scannedMod := range d.Mods {
-		found := false
-		for _, dbMod := range databaseMods {
-			if scannedMod.Dir == dbMod.Dir {
-				found = true
-				if scannedMod.LastModified != dbMod.LastModified {
-					modsToUpdate = append(modsToUpdate, models.Mod{
-						Dir:          scannedMod.Dir,
-						Name:         scannedMod.Name,
-						Category:     scannedMod.Category,
-						Active:       dbMod.Active,
-						InProfile:    dbMod.InProfile,
-						LastModified: scannedMod.LastModified,
-					})
-				}
-				break
-			}
-		}
+		dbMod, found := findModByDir(databaseMods, scannedMod.Dir)
 		if !found {
 			modsToAdd = append(modsToAdd, scannedMod)
+			continue
+		}
+
+		inProfile := modsInProfilesSet[scannedMod.Dir]
+		needsUpdate := scannedMod.LastModified != dbMod.LastModified || inProfile != dbMod.InProfile
+
+		if needsUpdate {
+			modsToUpdate = append(modsToUpdate, models.Mod{
+				Dir:          scannedMod.Dir,
+				Name:         scannedMod.Name,
+				Category:     scannedMod.Category,
+				Active:       dbMod.Active,
+				InProfile:    inProfile,
+				LastModified: scannedMod.LastModified,
+			})
 		}
 	}
 
 	for _, dbMod := range databaseMods {
-		found := false
-		for _, scannedMod := range d.Mods {
-			if dbMod.Dir == scannedMod.Dir {
-				found = true
-				break
-			}
-		}
-		if !found {
+		if !modExists(d.Mods, dbMod.Dir) {
 			modsToDelete = append(modsToDelete, dbMod)
 		}
 	}
 
 	insertMods(db, modsToAdd)
 	updateMods(db, modsToUpdate)
-	deleteMods(db, modsToDelete)
+	deleteMods(db, modsToDelete, assettoCorsaPath)
 
 	return nil
+}
+
+func findModByDir(mods []models.Mod, dir string) (models.Mod, bool) {
+	for _, mod := range mods {
+		if mod.Dir == dir {
+			return mod, true
+		}
+	}
+	return models.Mod{}, false
+}
+
+func modExists(mods []models.Mod, dir string) bool {
+	for _, mod := range mods {
+		if mod.Dir == dir {
+			return true
+		}
+	}
+	return false
 }
 
 func GetModsFromDatabase(db *sql.DB) []models.Mod {
@@ -288,19 +309,22 @@ func DeactivateProfiles(db *sql.DB, profiles []models.Profile) error {
 
 	for _, profile := range profiles {
 		modDirs := getModsInProfile(db, profile.Id)
-		for _, modDir := range modDirs {
-			if modInOtherActiveProfiles(db, modDir, profile.Id) {
-				continue
-			}
-			mods = append(mods, modDir)
-		}
+		mods = append(mods, modDirs...)
 		_, err := tx.Exec(`UPDATE profiles SET active = 0 WHERE id = ?`, profile.Id)
 		if err != nil {
 			return err
 		}
 	}
 
+	filteredMods := make(map[string]struct{})
 	for _, modDir := range mods {
+		if modInOtherActiveProfiles(db, modDir, profiles) {
+			continue
+		}
+		filteredMods[modDir] = struct{}{}
+	}
+
+	for modDir := range filteredMods {
 		_, err := tx.Exec(`UPDATE mods SET active = 0 WHERE dir = ?`, modDir)
 		if err != nil {
 			return err
@@ -309,8 +333,29 @@ func DeactivateProfiles(db *sql.DB, profiles []models.Profile) error {
 	return tx.Commit()
 }
 
-func modInOtherActiveProfiles(db *sql.DB, modDir string, profileId int) bool {
-	rows, err := db.Query(`SELECT id FROM profiles WHERE id != ? AND active = 1 AND id IN (SELECT profile_id FROM mod_profiles WHERE mod_dir = ?)`, profileId, modDir)
+func modInOtherActiveProfiles(db *sql.DB, modDir string, profiles []models.Profile) bool {
+	var ids []int
+	for _, profile := range profiles {
+		ids = append(ids, profile.Id)
+	}
+
+	placeholders := make([]string, len(ids))
+	for i := range placeholders {
+		placeholders[i] = "?"
+	}
+
+	query := fmt.Sprintf(
+		"SELECT id FROM profiles WHERE id NOT IN (%s) AND active = 1 AND id IN (SELECT profile_id FROM mod_profiles WHERE mod_dir = ?)",
+		strings.Join(placeholders, ","),
+	)
+
+	args := make([]interface{}, len(ids)+1)
+	for i, id := range ids {
+		args[i] = id
+	}
+	args[len(ids)] = modDir
+
+	rows, err := db.Query(query, args...)
 	if err != nil {
 		return false
 	}
@@ -380,7 +425,7 @@ func updateMods(db *sql.DB, mods []models.Mod) error {
 	return tx.Commit()
 }
 
-func deleteMods(db *sql.DB, mods []models.Mod) error {
+func deleteMods(db *sql.DB, mods []models.Mod, assettoCorsaPath string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -393,7 +438,13 @@ func deleteMods(db *sql.DB, mods []models.Mod) error {
 	}
 	defer statement.Close()
 	for _, mod := range mods {
-		_, err := statement.Exec(mod.Dir)
+		linkPath := symlink.BuildSymlinkPath(mod.Category, mod.Name, assettoCorsaPath)
+		err := symlink.DeleteSymlink(linkPath)
+		if err != nil {
+			log.Printf("warning: failed to delete symlink for %s: %v", mod.Name, err)
+		}
+
+		_, err = statement.Exec(mod.Dir)
 		if err != nil {
 			return err
 		}

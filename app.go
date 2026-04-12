@@ -3,6 +3,7 @@ package main
 import (
 	"acmp/database"
 	"acmp/models"
+	"acmp/symlink"
 	"context"
 	"fmt"
 	"os"
@@ -116,7 +117,7 @@ func (a *App) loadData() (*database.Data, error) {
 		return nil, err
 	}
 
-	err = data.UpdateDatabase(db)
+	err = data.UpdateDatabase(db, a.settings.AssettoCorsaPath)
 	if err != nil {
 		return nil, err
 	}
@@ -124,6 +125,11 @@ func (a *App) loadData() (*database.Data, error) {
 	data.Mods = database.GetModsFromDatabase(db)
 	data.Profiles = database.GetProfilesFromDatabase(db)
 	data.ModProfiles = database.GetModProfilesFromDatabase(db)
+
+	err = symlink.ReconcileSymlinks(data.Mods, a.settings.AssettoCorsaPath)
+	if err != nil {
+		return nil, err
+	}
 
 	return data, nil
 }
