@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/wailsapp/wails/v2/pkg/runtime"
 )
@@ -69,27 +70,35 @@ func (a *App) GetData() database.Data {
 	return a.data
 }
 
+func (a *App) RefreshData() error {
+	data, err := a.loadData()
+	if err != nil {
+		return err
+	}
+	a.data = *data
+	return nil
+}
+
 func (a *App) OpenFolderDialog(folder string) (string, error) {
 	folder, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{Title: fmt.Sprintf("Select %s folder", folder)})
 	return folder, err
 }
 
-func getAppDataPath() (string, error) {
+func getDbPath() (string, error) {
 	userDataDir, err := os.UserConfigDir()
 	if err != nil {
 		return "", err
 	}
 
-	return filepath.Join(userDataDir, "acmp"), nil
+	return filepath.Join(userDataDir, "acmp", "acmp.db"), nil
 }
 
 func (a *App) loadData() (*database.Data, error) {
-	appDataPath, err := getAppDataPath()
+	dbPath, err := getDbPath()
 	if err != nil {
 		return nil, err
 	}
 
-	dbPath := filepath.Join(appDataPath, "acmp.db")
 	db, err := database.NewDatabase(dbPath)
 	if err != nil {
 		return nil, err
@@ -116,4 +125,43 @@ func (a *App) loadData() (*database.Data, error) {
 	data.ModProfiles = database.GetModProfilesFromDatabase(db)
 
 	return data, nil
+}
+
+func (a *App) SaveProfile(profileRequest models.ProfileRequest) error {
+	dbPath, err := getDbPath()
+	if err != nil {
+		return err
+	}
+
+	db, err := database.NewDatabase(dbPath)
+	if err != nil {
+		return err
+	}
+
+	var profileId int
+	if profileRequest.ProfileId != "" {
+		profileId, err = strconv.Atoi(profileRequest.ProfileId)
+		if err != nil {
+			return err
+		}
+	} else {
+		profileId = -1
+	}
+
+	profile := models.Profile{
+		Id:          profileId,
+		Name:        profileRequest.Name,
+		Path:        "",
+		Category:    profileRequest.Category,
+		Active:      false,
+		AutoCreated: false,
+	}
+
+	var mods []string
+	for _, modDir := range profileRequest.Mods {
+		mods = append(mods, modDir)
+	}
+
+	database.SaveProfile(db, profile, mods)
+	return a.RefreshData()
 }

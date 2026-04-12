@@ -41,7 +41,7 @@ func InitSchema(db *sql.DB) error {
 	CREATE TABLE IF NOT EXISTS profiles (
 		id           INTEGER PRIMARY KEY AUTOINCREMENT,
 		name         TEXT NOT NULL,
-		path         TEXT UNIQUE NOT NULL,
+		path         TEXT,
 		category     TEXT NOT NULL,
 		active       BOOLEAN NOT NULL DEFAULT 0,
 		auto_created BOOLEAN NOT NULL DEFAULT 0
@@ -163,6 +163,38 @@ func GetModProfilesFromDatabase(db *sql.DB) []models.ModProfile {
 		modProfiles = append(modProfiles, modProfile)
 	}
 	return modProfiles
+}
+
+func SaveProfile(db *sql.DB, profile models.Profile, modDirs []string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	result, err := tx.Exec(`INSERT INTO profiles (name, path, category, active, auto_created) VALUES (?, ?, ?, ?, ?)`,
+		profile.Name, profile.Path, profile.Category, profile.Active, profile.AutoCreated)
+	if err != nil {
+		return err
+	}
+
+	profileId, err := result.LastInsertId()
+	if err != nil {
+		return err
+	}
+
+	statement, err := tx.Prepare(`INSERT INTO mod_profiles (mod_dir, profile_id) VALUES (?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	for _, modDir := range modDirs {
+		_, err := statement.Exec(modDir, profileId)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
 }
 
 func insertMods(db *sql.DB, mods []models.Mod) error {

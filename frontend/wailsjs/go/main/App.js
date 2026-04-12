@@ -14,6 +14,14 @@ export function OpenFolderDialog(arg1) {
   return window['go']['main']['App']['OpenFolderDialog'](arg1);
 }
 
+export function RefreshData() {
+  return window['go']['main']['App']['RefreshData']();
+}
+
+export function SaveProfile(arg1) {
+  return window['go']['main']['App']['SaveProfile'](arg1);
+}
+
 export function SaveSettings(arg1) {
   return window['go']['main']['App']['SaveSettings'](arg1);
 }

@@ -8,7 +8,7 @@
   import { Plus, Search } from "@lucide/svelte";
   import SortButton from "./SortButton.svelte";
 
-  import { GetData } from "../../wailsjs/go/Main/App";
+  import { GetData, SaveProfile } from "../../wailsjs/go/Main/App";
 
   let {
     editMode = false,
@@ -21,7 +21,6 @@
 
   let profileName = $state<string>("");
   let selectedMods = $state<Set<string>>(new Set());
-
   let selectedCategory = $state<string>("Cars");
   let searchQuery = $state<string>("");
   let sortField = $state<"name" | "lastModified">("name");
@@ -129,6 +128,22 @@
     sortField = "name";
     sortDirection = "asc";
     open = true;
+  }
+
+  function handleSubmit() {
+    if (profileName.trim() === "") {
+      alert("Profile name cannot be empty.");
+      return;
+    }
+    const profileData = {
+      id: profileId,
+      name: profileName,
+      category: selectedCategory,
+      mods: Array.from(selectedMods),
+    };
+    console.log("submit called");
+    SaveProfile(profileData);
+    resetForm();
   }
 
   function openEdit() {
@@ -288,7 +303,9 @@
             >
               Cancel
             </Dialog.Close>
-            <Button type="submit">{editMode ? "Save" : "Create"}</Button>
+            <Button onclick={handleSubmit} type="submit"
+              >{editMode ? "Save" : "Create"}</Button
+            >
           </Dialog.Footer>
         </div>
       </div>

@@ -116,6 +116,24 @@ export namespace models {
 	        this.AutoCreated = source["AutoCreated"];
 	    }
 	}
+	export class ProfileRequest {
+	    id: string;
+	    name: string;
+	    category: string;
+	    mods: string[];
+	
+	    static createFrom(source: any = {}) {
+	        return new ProfileRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.id = source["id"];
+	        this.name = source["name"];
+	        this.category = source["category"];
+	        this.mods = source["mods"];
+	    }
+	}
 	export class Settings {
 	    assetto_corsa_path: string;
 	    mods_path: string;

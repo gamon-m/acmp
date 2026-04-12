@@ -32,3 +32,10 @@ type Settings struct {
 	ModsPath          string `json:"mods_path"`
 	AutomaticProfiles bool   `json:"automatic_profiles"`
 }
+
+type ProfileRequest struct {
+	ProfileId string   `json:"id"`
+	Name      string   `json:"name"`
+	Category  string   `json:"category"`
+	Mods      []string `json:"mods"`
+}

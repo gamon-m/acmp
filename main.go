@@ -26,9 +26,9 @@ func main() {
 	err := wails.Run(&options.App{
 		Title:             "acmp",
 		Width:             1280,
-		Height:            720,
+		Height:            900,
 		MinWidth:          1024,
-		MinHeight:         768,
+		MinHeight:         900,
 		DisableResize:     false,
 		Fullscreen:        false,
 		Frameless:         false,
