@@ -3,6 +3,8 @@
 import {database} from '../models';
 import {models} from '../models';
 
+export function DeleteProfile(arg1:number):Promise<void>;
+
 export function GetData():Promise<database.Data>;
 
 export function GetSettings():Promise<models.Settings>;

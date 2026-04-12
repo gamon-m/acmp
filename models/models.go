@@ -24,7 +24,7 @@ type Profile struct {
 
 type ModProfile struct {
 	ModDir    string
-	ProfileID int
+	ProfileId int
 }
 
 type Settings struct {

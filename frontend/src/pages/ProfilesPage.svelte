@@ -6,6 +6,8 @@
     Trash2,
     EllipsisVertical,
   } from "@lucide/svelte";
+  import { onMount } from "svelte";
+  import { EventsOn, EventsOff } from "../../wailsjs/runtime/runtime";
   import { Button } from "$lib/components/ui/button/index";
   import { Input } from "$lib/components/ui/input/index";
   import * as Card from "$lib/components/ui/card/index";
@@ -15,84 +17,60 @@
   import AddProfileDialog from "../components/AddProfileDialog.svelte";
   import EditProfileDialog from "../components/EditProfileDialog.svelte";
 
+  import { GetData, DeleteProfile } from "../../wailsjs/go/Main/App";
+
   interface Profile {
-    id: string;
+    id: number;
     name: string;
     category: string;
     modCount: number;
     active: boolean;
   }
 
+  let data = $state<any>(null);
   let searchQuery = $state("");
   let selectedCategory = $state<string>("All");
   let sortField = $state<"name" | "category" | "modCount" | "active">("name");
   let sortDirection = $state<"asc" | "desc">("asc");
 
-  const mockProfiles: Profile[] = $state([
-    {
-      id: "1",
-      name: "Drift",
-      category: "Cars",
-      modCount: 12,
-      active: false,
-    },
-    {
-      id: "2",
-      name: "Touge",
-      category: "Tracks",
-      modCount: 45,
-      active: true,
-    },
-    {
-      id: "3",
-      name: "Other",
-      category: "Cars",
-      modCount: 8,
-      active: false,
-    },
-    {
-      id: "4",
-      name: "Drift",
-      category: "Tracks",
-      modCount: 167,
-      active: false,
-    },
-    {
-      id: "5",
-      name: "Drift",
-      category: "Cars",
-      modCount: 12,
-      active: false,
-    },
-    {
-      id: "6",
-      name: "Touge",
-      category: "Tracks",
-      modCount: 45,
-      active: true,
-    },
-    {
-      id: "7",
-      name: "Other",
-      category: "Cars",
-      modCount: 8,
-      active: false,
-    },
-    {
-      id: "8",
-      name: "Drift",
-      category: "Tracks",
-      modCount: 167,
-      active: false,
-    },
-  ]);
+  let profiles = $state<Profile[]>([]);
 
   const categories = ["All", "Cars", "Tracks"];
 
   const gridTable = "grid grid-cols-[4fr_120px_120px_180px]";
 
+  async function loadProfiles() {
+    try {
+      const rawData = await GetData();
+      data = rawData;
+      profiles = data.Profiles.map((p: any) => ({
+        id: p.Id,
+        name: p.Name,
+        category: p.Category,
+        modCount: getModCount(p.Id),
+        active: p.Active,
+      }));
+    } catch (error) {
+      console.error("Failed to load profiles:", error);
+    }
+  }
+
+  function getModsInProfile(profileId: number): string[] {
+    if (!data || !data.ModProfiles) {
+      return [];
+    }
+    const modsInProfile = data.ModProfiles.filter(
+      (mp: any) => mp.ProfileId === profileId,
+    );
+    return modsInProfile.map((mp: any) => mp.ModDir);
+  }
+
+  function getModCount(profileId: number): number {
+    return getModsInProfile(profileId).length;
+  }
+
   function getFilteredProfiles() {
-    let result = mockProfiles.filter((p) => {
+    let result = profiles.filter((p) => {
       const matchesSearch = p.name
         .toLowerCase()
         .includes(searchQuery.toLowerCase());
@@ -131,8 +109,12 @@
     profile.active = !profile.active;
   }
 
-  function deleteProfile(profile: Profile) {
-    console.log("deleting profile:", profile.name);
+  async function deleteProfile(profile: Profile) {
+    try {
+      await DeleteProfile(profile.id);
+    } catch (error) {
+      console.error("Failed to delete profile:", error);
+    }
   }
 
   let editDialogOpen = $state(false);
@@ -143,7 +125,19 @@
     editDialogOpen = true;
   }
 
-  // Reset editingProfile when dialog closes
+  onMount(() => {
+    loadProfiles();
+
+    EventsOn("data-updated", async () => {
+      profiles = [];
+      await loadProfiles();
+    });
+
+    return () => {
+      EventsOff("data-updated");
+    };
+  });
+
   $effect(() => {
     if (!editDialogOpen) {
       editingProfile = null;
@@ -195,10 +189,10 @@
   <!-- Edit profile dialog -->
   <EditProfileDialog
     bind:open={editDialogOpen}
-    profileId={editingProfile?.id ?? ""}
-    initialProfileName={editingProfile?.name ?? ""}
-    initialCategory={editingProfile?.category ?? "Cars"}
-    preselectedMods={new Set()}
+    profileId={editingProfile?.id}
+    initialProfileName={editingProfile?.name}
+    initialCategory={editingProfile?.category}
+    preselectedMods={new Set(getModsInProfile(editingProfile?.id || -1))}
   />
 
   <!-- Main table -->

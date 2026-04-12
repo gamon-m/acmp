@@ -2,7 +2,7 @@
   import AddProfileDialog from "./AddProfileDialog.svelte";
 
   let {
-    profileId = "",
+    profileId,
     initialProfileName = "",
     initialCategory = "Cars",
     preselectedMods = new Set<string>(),

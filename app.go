@@ -76,6 +76,7 @@ func (a *App) RefreshData() error {
 		return err
 	}
 	a.data = *data
+	runtime.EventsEmit(a.ctx, "data-updated", nil)
 	return nil
 }
 
@@ -163,5 +164,23 @@ func (a *App) SaveProfile(profileRequest models.ProfileRequest) error {
 	}
 
 	database.SaveProfile(db, profile, mods)
+	return a.RefreshData()
+}
+
+func (a *App) DeleteProfile(profileId int) error {
+	dbPath, err := getDbPath()
+	if err != nil {
+		return err
+	}
+
+	db, err := database.NewDatabase(dbPath)
+	if err != nil {
+		return err
+	}
+
+	err = database.DeleteProfile(db, profileId)
+	if err != nil {
+		return err
+	}
 	return a.RefreshData()
 }

@@ -82,7 +82,7 @@ export namespace models {
 	}
 	export class ModProfile {
 	    ModDir: string;
-	    ProfileID: number;
+	    ProfileId: number;
 	
 	    static createFrom(source: any = {}) {
 	        return new ModProfile(source);
@@ -91,7 +91,7 @@ export namespace models {
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
 	        this.ModDir = source["ModDir"];
-	        this.ProfileID = source["ProfileID"];
+	        this.ProfileId = source["ProfileId"];
 	    }
 	}
 	export class Profile {

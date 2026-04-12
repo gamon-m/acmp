@@ -141,17 +141,15 @@
       category: selectedCategory,
       mods: Array.from(selectedMods),
     };
-    console.log("submit called");
     SaveProfile(profileData);
     resetForm();
   }
 
-  function openEdit() {
-    initForm();
-  }
-
   $effect(() => {
-    loadMods();
+    if (open) {
+      loadMods();
+      initForm();
+    }
   });
 </script>
 

@@ -156,7 +156,7 @@ func GetModProfilesFromDatabase(db *sql.DB) []models.ModProfile {
 	var modProfiles []models.ModProfile
 	for rows.Next() {
 		var modProfile models.ModProfile
-		err := rows.Scan(&modProfile.ModDir, &modProfile.ProfileID)
+		err := rows.Scan(&modProfile.ModDir, &modProfile.ProfileId)
 		if err != nil {
 			continue
 		}
@@ -193,6 +193,24 @@ func SaveProfile(db *sql.DB, profile models.Profile, modDirs []string) error {
 		if err != nil {
 			return err
 		}
+	}
+	return tx.Commit()
+}
+
+func DeleteProfile(db *sql.DB, profileId int) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(`DELETE FROM mod_profiles WHERE profile_id = ?`, profileId)
+	if err != nil {
+		return err
+	}
+	_, err = tx.Exec(`DELETE FROM profiles WHERE id = ?`, profileId)
+	if err != nil {
+		return err
 	}
 	return tx.Commit()
 }
