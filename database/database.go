@@ -165,7 +165,7 @@ func GetModProfilesFromDatabase(db *sql.DB) []models.ModProfile {
 	return modProfiles
 }
 
-func SaveProfile(db *sql.DB, profile models.Profile, modDirs []string) error {
+func CreateProfile(db *sql.DB, profile models.Profile, modDirs []string) error {
 	tx, err := db.Begin()
 	if err != nil {
 		return err
@@ -190,6 +190,37 @@ func SaveProfile(db *sql.DB, profile models.Profile, modDirs []string) error {
 	defer statement.Close()
 	for _, modDir := range modDirs {
 		_, err := statement.Exec(modDir, profileId)
+		if err != nil {
+			return err
+		}
+	}
+	return tx.Commit()
+}
+
+func UpdateProfile(db *sql.DB, profile models.Profile, modDirs []string) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(`UPDATE profiles SET name = ? WHERE id = ?`, profile.Name, profile.Id)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`DELETE FROM mod_profiles where profile_id = ?`, profile.Id)
+	if err != nil {
+		return err
+	}
+
+	statement, err := tx.Prepare(`INSERT INTO mod_profiles (mod_dir, profile_id) VALUES (?, ?)`)
+	if err != nil {
+		return err
+	}
+	defer statement.Close()
+	for _, modDir := range modDirs {
+		_, err := statement.Exec(modDir, profile.Id)
 		if err != nil {
 			return err
 		}

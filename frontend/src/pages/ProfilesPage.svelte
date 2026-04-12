@@ -189,7 +189,7 @@
   <!-- Edit profile dialog -->
   <EditProfileDialog
     bind:open={editDialogOpen}
-    profileId={editingProfile?.id}
+    profileId={String(editingProfile?.id) || ""}
     initialProfileName={editingProfile?.name}
     initialCategory={editingProfile?.category}
     preselectedMods={new Set(getModsInProfile(editingProfile?.id || -1))}

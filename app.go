@@ -163,7 +163,11 @@ func (a *App) SaveProfile(profileRequest models.ProfileRequest) error {
 		mods = append(mods, modDir)
 	}
 
-	database.SaveProfile(db, profile, mods)
+	if profile.Id == -1 {
+		database.CreateProfile(db, profile, mods)
+	} else {
+		database.UpdateProfile(db, profile, mods)
+	}
 	return a.RefreshData()
 }
 
