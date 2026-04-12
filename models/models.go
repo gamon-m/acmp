@@ -14,7 +14,7 @@ type Mod struct {
 }
 
 type Profile struct {
-	ID          int
+	Id          int
 	Name        string
 	Path        string
 	Category    string

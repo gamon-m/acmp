@@ -95,7 +95,7 @@ export namespace models {
 	    }
 	}
 	export class Profile {
-	    ID: number;
+	    Id: number;
 	    Name: string;
 	    Path: string;
 	    Category: string;
@@ -108,7 +108,7 @@ export namespace models {
 	
 	    constructor(source: any = {}) {
 	        if ('string' === typeof source) source = JSON.parse(source);
-	        this.ID = source["ID"];
+	        this.Id = source["Id"];
 	        this.Name = source["Name"];
 	        this.Path = source["Path"];
 	        this.Category = source["Category"];

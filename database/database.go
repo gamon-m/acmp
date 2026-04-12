@@ -34,8 +34,8 @@ func InitSchema(db *sql.DB) error {
 		mod_name     TEXT NOT NULL,
 		category     TEXT NOT NULL,
 		active       BOOLEAN NOT NULL DEFAULT 0,
-		inProfile    BOOLEAN NOT NULL DEFAULT 0,
-		lastModified DATETIME NOT NULL
+		in_profile    BOOLEAN NOT NULL DEFAULT 0,
+		last_modified DATETIME NOT NULL
 	);
 
 	CREATE TABLE IF NOT EXISTS profiles (
@@ -109,7 +109,7 @@ func (d *Data) UpdateDatabase(db *sql.DB) error {
 }
 
 func GetModsFromDatabase(db *sql.DB) []models.Mod {
-	rows, err := db.Query("SELECT dir, mod_name, category, active, inProfile, lastModified FROM mods")
+	rows, err := db.Query("SELECT dir, mod_name, category, active, in_profile, last_modified FROM mods")
 	if err != nil {
 		return nil
 	}
@@ -127,6 +127,44 @@ func GetModsFromDatabase(db *sql.DB) []models.Mod {
 	return mods
 }
 
+func GetProfilesFromDatabase(db *sql.DB) []models.Profile {
+	rows, err := db.Query("SELECT id, name, path, category, active, auto_created FROM profiles")
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var profiles []models.Profile
+	for rows.Next() {
+		var profile models.Profile
+		err := rows.Scan(&profile.Id, &profile.Name, &profile.Path, &profile.Category, &profile.Active, &profile.AutoCreated)
+		if err != nil {
+			continue
+		}
+		profiles = append(profiles, profile)
+	}
+	return profiles
+}
+
+func GetModProfilesFromDatabase(db *sql.DB) []models.ModProfile {
+	rows, err := db.Query("SELECT mod_dir, profile_id FROM mod_profiles")
+	if err != nil {
+		return nil
+	}
+	defer rows.Close()
+
+	var modProfiles []models.ModProfile
+	for rows.Next() {
+		var modProfile models.ModProfile
+		err := rows.Scan(&modProfile.ModDir, &modProfile.ProfileID)
+		if err != nil {
+			continue
+		}
+		modProfiles = append(modProfiles, modProfile)
+	}
+	return modProfiles
+}
+
 func insertMods(db *sql.DB, mods []models.Mod) error {
 	tx, err := db.Begin()
 	if err != nil {
@@ -134,7 +172,7 @@ func insertMods(db *sql.DB, mods []models.Mod) error {
 	}
 	defer tx.Rollback()
 
-	statement, err := tx.Prepare(`INSERT INTO mods (dir, mod_name, category, active, inProfile, lastModified)
+	statement, err := tx.Prepare(`INSERT INTO mods (dir, mod_name, category, active, in_profile, last_modified)
 	 VALUES (?, ?, ?, ?, ?, ?)`)
 	if err != nil {
 		return err
@@ -156,7 +194,7 @@ func updateMods(db *sql.DB, mods []models.Mod) error {
 	}
 	defer tx.Rollback()
 
-	statement, err := tx.Prepare(`UPDATE mods SET mod_name = ?, category = ?, active = ?, inProfile = ?, lastModified = ? WHERE dir = ?`)
+	statement, err := tx.Prepare(`UPDATE mods SET mod_name = ?, category = ?, active = ?, in_profile = ?, last_modified = ? WHERE dir = ?`)
 	if err != nil {
 		return err
 	}

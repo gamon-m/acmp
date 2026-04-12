@@ -112,6 +112,8 @@ func (a *App) loadData() (*database.Data, error) {
 	}
 
 	data.Mods = database.GetModsFromDatabase(db)
+	data.Profiles = database.GetProfilesFromDatabase(db)
+	data.ModProfiles = database.GetModProfilesFromDatabase(db)
 
 	return data, nil
 }
