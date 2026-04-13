@@ -67,7 +67,14 @@ func InitSchema(db *sql.DB) error {
 	return err
 }
 
-func (d *Data) UpdateDatabase(db *sql.DB, assettoCorsaPath string) error {
+func (d *Data) UpdateDatabase(db *sql.DB, settings models.Settings) error {
+	if settings.AutomaticProfiles {
+		err := syncAutoProfiles(db, d.Mods, settings.ModsPath)
+		if err != nil {
+			return err
+		}
+	}
+
 	databaseMods := GetModsFromDatabase(db)
 	modProfiles := GetModProfilesFromDatabase(db)
 
@@ -110,8 +117,7 @@ func (d *Data) UpdateDatabase(db *sql.DB, assettoCorsaPath string) error {
 
 	insertMods(db, modsToAdd)
 	updateMods(db, modsToUpdate)
-	deleteMods(db, modsToDelete, assettoCorsaPath)
-
+	deleteMods(db, modsToDelete, settings.AssettoCorsaPath)
 	return nil
 }
 

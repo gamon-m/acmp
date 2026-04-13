@@ -117,7 +117,7 @@ func (a *App) loadData() (*database.Data, error) {
 		return nil, err
 	}
 
-	err = data.UpdateDatabase(db, a.settings.AssettoCorsaPath)
+	err = data.UpdateDatabase(db, a.settings)
 	if err != nil {
 		return nil, err
 	}
