@@ -6,6 +6,7 @@
     Trash2,
     EllipsisVertical,
     Save,
+    Lock,
   } from "@lucide/svelte";
   import { onMount } from "svelte";
   import { EventsOn, EventsOff } from "../../wailsjs/runtime/runtime";
@@ -285,8 +286,14 @@
         >
           <Card.Content class="{gridTable} gap-6 items-center">
             <!-- Profile name -->
-            <div class="border-r border-border pr-4">
+            <div class="border-r border-border pr-4 flex items-center gap-2">
               <p class="text-sm">{profile.name}</p>
+              {#if profile.auto_created}
+                <div class="flex items-center gap-1 text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">
+                  <Lock class="w-3 h-3" />
+                  Auto
+                </div>
+              {/if}
             </div>
 
             <!-- Category -->
@@ -314,29 +321,33 @@
               </div>
 
               <!-- Dropdown menu -->
-              <div class="flex flex-1 justify-center">
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger>
-                    <Button variant="ghost" size="sm" class="h-8 w-8">
-                      <EllipsisVertical class="size-4" />
-                    </Button>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Content>
-                    <DropdownMenu.Item onclick={() => editProfile(profile)}>
-                      <Pencil class="size-4 mr-2" />
-                      Edit
-                    </DropdownMenu.Item>
-                    <DropdownMenu.Separator />
-                    <DropdownMenu.Item
-                      class="text-destructive focus:text-destructive"
-                      onclick={() => deleteProfile(profile)}
-                    >
-                      <Trash2 class="size-4 mr-2" />
-                      Delete
-                    </DropdownMenu.Item>
-                  </DropdownMenu.Content>
-                </DropdownMenu.Root>
-              </div>
+                <div class="flex flex-1 justify-center">
+                  {#if profile.auto_created}
+                    <div class="h-8 w-8"></div>
+                  {:else}
+                    <DropdownMenu.Root>
+                      <DropdownMenu.Trigger>
+                        <Button variant="ghost" size="sm" class="h-8 w-8">
+                          <EllipsisVertical class="size-4" />
+                        </Button>
+                      </DropdownMenu.Trigger>
+                      <DropdownMenu.Content>
+                        <DropdownMenu.Item onclick={() => editProfile(profile)}>
+                          <Pencil class="size-4 mr-2" />
+                          Edit
+                        </DropdownMenu.Item>
+                        <DropdownMenu.Separator />
+                        <DropdownMenu.Item
+                          class="text-destructive focus:text-destructive"
+                          onclick={() => deleteProfile(profile)}
+                        >
+                          <Trash2 class="size-4 mr-2" />
+                          Delete
+                        </DropdownMenu.Item>
+                      </DropdownMenu.Content>
+                    </DropdownMenu.Root>
+                  {/if}
+                </div>
             </div>
           </Card.Content>
         </Card.Root>
