@@ -14,7 +14,6 @@
   import { Input } from "$lib/components/ui/input/index";
   import * as Card from "$lib/components/ui/card/index";
   import * as DropdownMenu from "$lib/components/ui/dropdown-menu/index";
-  import * as Select from "$lib/components/ui/select/index";
   import SortButton from "../components/SortButton.svelte";
   import AddProfileDialog from "../components/AddProfileDialog.svelte";
   import EditProfileDialog from "../components/EditProfileDialog.svelte";
@@ -199,21 +198,20 @@
         />
       </div>
 
-      <!-- Category selection -->
-      <Select.Root type="single" bind:value={selectedCategory}>
-        <Select.Trigger class="w-40 min-h-8"
-          >{selectedCategory === "All"
-            ? "All Categories"
-            : selectedCategory}</Select.Trigger
-        >
-        <Select.Content>
-          {#each categories as category}
-            <Select.Item value={category}>
-              {category === "All" ? "All Categories" : category}
-            </Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
+      <!-- Category toggle -->
+      <div
+        class="flex items-center bg-secondary rounded-md p-0.5 border border-input h-8"
+      >
+        {#each categories as category}
+          <Button
+            variant={selectedCategory === category ? "default" : "ghost"}
+            onclick={() => (selectedCategory = category)}
+            class="px-3 text-xs"
+          >
+            {category === "All" ? "All" : category}
+          </Button>
+        {/each}
+      </div>
     </div>
 
     <!-- Add profile button -->
@@ -289,7 +287,9 @@
             <div class="border-r border-border pr-4 flex items-center gap-2">
               <p class="text-sm">{profile.name}</p>
               {#if profile.auto_created}
-                <div class="flex items-center gap-1 text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded">
+                <div
+                  class="flex items-center gap-1 text-xs text-muted-foreground bg-secondary px-2 py-0.5 rounded"
+                >
                   <Lock class="w-3 h-3" />
                   Auto
                 </div>
@@ -321,33 +321,33 @@
               </div>
 
               <!-- Dropdown menu -->
-                <div class="flex flex-1 justify-center">
-                  {#if profile.auto_created}
-                    <div class="h-8 w-8"></div>
-                  {:else}
-                    <DropdownMenu.Root>
-                      <DropdownMenu.Trigger>
-                        <Button variant="ghost" size="sm" class="h-8 w-8">
-                          <EllipsisVertical class="size-4" />
-                        </Button>
-                      </DropdownMenu.Trigger>
-                      <DropdownMenu.Content>
-                        <DropdownMenu.Item onclick={() => editProfile(profile)}>
-                          <Pencil class="size-4 mr-2" />
-                          Edit
-                        </DropdownMenu.Item>
-                        <DropdownMenu.Separator />
-                        <DropdownMenu.Item
-                          class="text-destructive focus:text-destructive"
-                          onclick={() => deleteProfile(profile)}
-                        >
-                          <Trash2 class="size-4 mr-2" />
-                          Delete
-                        </DropdownMenu.Item>
-                      </DropdownMenu.Content>
-                    </DropdownMenu.Root>
-                  {/if}
-                </div>
+              <div class="flex flex-1 justify-center">
+                {#if profile.auto_created}
+                  <div class="h-8 w-8"></div>
+                {:else}
+                  <DropdownMenu.Root>
+                    <DropdownMenu.Trigger>
+                      <Button variant="ghost" size="sm" class="h-8 w-8">
+                        <EllipsisVertical class="size-4" />
+                      </Button>
+                    </DropdownMenu.Trigger>
+                    <DropdownMenu.Content>
+                      <DropdownMenu.Item onclick={() => editProfile(profile)}>
+                        <Pencil class="size-4 mr-2" />
+                        Edit
+                      </DropdownMenu.Item>
+                      <DropdownMenu.Separator />
+                      <DropdownMenu.Item
+                        class="text-destructive focus:text-destructive"
+                        onclick={() => deleteProfile(profile)}
+                      >
+                        <Trash2 class="size-4 mr-2" />
+                        Delete
+                      </DropdownMenu.Item>
+                    </DropdownMenu.Content>
+                  </DropdownMenu.Root>
+                {/if}
+              </div>
             </div>
           </Card.Content>
         </Card.Root>

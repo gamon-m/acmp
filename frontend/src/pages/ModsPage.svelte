@@ -1,6 +1,5 @@
 <script lang="ts">
   import { Search, Plus } from "@lucide/svelte";
-  import * as Select from "$lib/components/ui/select/index";
   import { Button } from "$lib/components/ui/button/index";
   import { Input } from "$lib/components/ui/input/index";
   import * as Table from "$lib/components/ui/table/index";
@@ -99,21 +98,20 @@
         />
       </div>
 
-      <!-- Category selection -->
-      <Select.Root type="single" bind:value={selectedCategory}>
-        <Select.Trigger class="w-40 min-h-8"
-          >{selectedCategory === "All"
-            ? "All Categories"
-            : selectedCategory}</Select.Trigger
-        >
-        <Select.Content>
-          {#each categories as category}
-            <Select.Item value={category}>
-              {category === "All" ? "All Categories" : category}
-            </Select.Item>
-          {/each}
-        </Select.Content>
-      </Select.Root>
+      <!-- Category toggle -->
+      <div
+        class="flex items-center bg-secondary rounded-md p-0.5 border border-input h-8"
+      >
+        {#each categories as category}
+          <Button
+            variant={selectedCategory === category ? "default" : "ghost"}
+            onclick={() => (selectedCategory = category)}
+            class="px-3 text-xs"
+          >
+            {category === "All" ? "All" : category}
+          </Button>
+        {/each}
+      </div>
     </div>
 
     <!-- Add mod button -->
