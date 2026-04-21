@@ -38,12 +38,8 @@ func DeleteSymlink(linkpath string) error {
 		return err
 	}
 
-	if !exists {
+	if !exists || !isSymlink {
 		return nil
-	}
-
-	if !isSymlink {
-		return fmt.Errorf("path exists but is not a symlink: %s", linkpath)
 	}
 
 	err = os.Remove(linkpath)
@@ -85,11 +81,18 @@ func ReconcileSymlinks(mods []models.Mod, assettoPath string) error {
 
 			linkPath := BuildSymlinkPath(mod.Category, mod.Name, assettoPath)
 
+			var err error
 			if mod.Active {
-				return ensureSymlink(mod.Dir, linkPath)
+				err = ensureSymlink(mod.Dir, linkPath)
 			} else {
-				return DeleteSymlink(linkPath)
+				err = DeleteSymlink(linkPath)
 			}
+
+			if err != nil {
+				fmt.Printf("warning: symlink failed for %s: %v\n", linkPath, err)
+				return nil
+			}
+			return nil
 		})
 	}
 	return g.Wait()
