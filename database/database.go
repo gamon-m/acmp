@@ -73,6 +73,11 @@ func (d *Data) UpdateDatabase(db *sql.DB, settings models.Settings) error {
 		if err != nil {
 			return err
 		}
+	} else {
+		err := deleteAutoProfiles(db)
+		if err != nil {
+			return err
+		}
 	}
 
 	databaseMods := GetModsFromDatabase(db)
@@ -468,4 +473,17 @@ func deleteMods(db *sql.DB, mods []models.Mod, assettoCorsaPath string) error {
 		}
 	}
 	return tx.Commit()
+}
+
+func deleteAutoProfiles(db *sql.DB) error {
+	profiles := GetProfilesFromDatabase(db)
+	for _, profile := range profiles {
+		if profile.AutoCreated {
+			err := DeleteProfile(db, profile.Id)
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }

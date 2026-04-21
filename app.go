@@ -64,7 +64,7 @@ func (a *App) SaveSettings(settings models.Settings) error {
 	}
 
 	a.settings = settings
-	return nil
+	return a.RefreshData()
 }
 
 func (a *App) GetData() database.Data {
