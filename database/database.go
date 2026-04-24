@@ -487,3 +487,53 @@ func deleteAutoProfiles(db *sql.DB) error {
 	}
 	return nil
 }
+
+func ClearModsAndAutoProfiles(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(`DELETE FROM mod_profiles`)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`DELETE FROM mods`)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`DELETE FROM profiles WHERE auto_created = 1`)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`UPDATE profiles SET active = 0`)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}
+
+func DeactivateAllModsAndProfiles(db *sql.DB) error {
+	tx, err := db.Begin()
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+
+	_, err = tx.Exec(`UPDATE mods SET active = 0`)
+	if err != nil {
+		return err
+	}
+
+	_, err = tx.Exec(`UPDATE profiles SET active = 0`)
+	if err != nil {
+		return err
+	}
+
+	return tx.Commit()
+}

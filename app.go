@@ -58,7 +58,45 @@ func (a *App) GetSettings() models.Settings {
 }
 
 func (a *App) SaveSettings(settings models.Settings) error {
-	err := saveSettings(settings)
+	dbPath, err := getDbPath()
+	if err != nil {
+		return err
+	}
+
+	db, err := database.NewDatabase(dbPath)
+	if err != nil {
+		return err
+	}
+
+	err = database.InitSchema(db)
+	if err != nil {
+		return err
+	}
+
+	if settings.ModsPath != a.settings.ModsPath && a.settings.ModsPath != "" {
+		err = database.ClearModsAndAutoProfiles(db)
+		if err != nil {
+			return err
+		}
+	}
+
+	if settings.AssettoCorsaPath != a.settings.AssettoCorsaPath && a.settings.AssettoCorsaPath != "" {
+		existingMods := database.GetModsFromDatabase(db)
+		for _, mod := range existingMods {
+			linkPath := symlink.BuildSymlinkPath(mod.Category, mod.Name, a.settings.AssettoCorsaPath)
+			err := symlink.DeleteSymlink(linkPath)
+			if err != nil {
+				continue
+			}
+		}
+
+		err = database.DeactivateAllModsAndProfiles(db)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = saveSettings(settings)
 	if err != nil {
 		return err
 	}
