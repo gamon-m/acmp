@@ -12,6 +12,7 @@
     GetSettings,
     SaveSettings,
     OpenFolderDialog,
+    ResetData,
   } from "../../wailsjs/go/Main/App";
 
   interface Settings {
@@ -63,6 +64,14 @@
   }
 
   async function resetApp() {
+    try {
+      await ResetData();
+      alert("Application reset successfully! All data has been deleted.");
+      loadSettings();
+    } catch (error) {
+      console.error("Failed to reset application:", error);
+      alert("Failed to reset application. Please try again.");
+    }
     resetDialogOpen = false;
   }
 

@@ -15,6 +15,10 @@ type Data struct {
 }
 
 func (d *Data) ScanMods(settings *models.Settings) error {
+	if settings.ModsPath == "" {
+		return nil
+	}
+
 	var category string
 
 	return filepath.WalkDir(settings.ModsPath, func(path string, dir fs.DirEntry, err error) error {

@@ -81,6 +81,38 @@ func (a *App) RefreshData() error {
 	return nil
 }
 
+func (a *App) ResetData() error {
+	for _, mod := range a.data.Mods {
+		symlinkPath := filepath.Join(a.settings.AssettoCorsaPath, "content", mod.Category, mod.Name)
+		err := symlink.DeleteSymlink(symlinkPath)
+		if err != nil {
+			continue
+		}
+	}
+
+	a.settings.AssettoCorsaPath = ""
+	a.settings.ModsPath = ""
+	a.settings.AutomaticProfiles = false
+
+	err := saveSettings(a.settings)
+	if err != nil {
+		return err
+	}
+
+	dbPath, err := getDbPath()
+	if err != nil {
+		return err
+	}
+	err = os.Remove(dbPath)
+	if err != nil && !os.IsNotExist(err) {
+		return err
+	}
+
+	a.data = database.Data{}
+	runtime.EventsEmit(a.ctx, "data-updated", nil)
+	return nil
+}
+
 func (a *App) OpenFolderDialog(folder string) (string, error) {
 	folder, err := runtime.OpenDirectoryDialog(a.ctx, runtime.OpenDialogOptions{Title: fmt.Sprintf("Select %s folder", folder)})
 	return folder, err
@@ -126,9 +158,11 @@ func (a *App) loadData() (*database.Data, error) {
 	data.Profiles = database.GetProfilesFromDatabase(db)
 	data.ModProfiles = database.GetModProfilesFromDatabase(db)
 
-	err = symlink.ReconcileSymlinks(data.Mods, a.settings.AssettoCorsaPath)
-	if err != nil {
-		return nil, err
+	if a.settings.AssettoCorsaPath != "" {
+		err = symlink.ReconcileSymlinks(data.Mods, a.settings.AssettoCorsaPath)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return data, nil

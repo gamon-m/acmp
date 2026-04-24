@@ -22,6 +22,10 @@ export function RefreshData() {
   return window['go']['main']['App']['RefreshData']();
 }
 
+export function ResetData() {
+  return window['go']['main']['App']['ResetData']();
+}
+
 export function SaveProfile(arg1) {
   return window['go']['main']['App']['SaveProfile'](arg1);
 }
