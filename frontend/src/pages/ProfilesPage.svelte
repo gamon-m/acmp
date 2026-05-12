@@ -8,7 +8,6 @@
     Save,
     Lock,
   } from "@lucide/svelte";
-  import { onMount } from "svelte";
   import { EventsOn, EventsOff } from "../../wailsjs/runtime/runtime";
   import { Button } from "$lib/components/ui/button/index";
   import { Input } from "$lib/components/ui/input/index";
@@ -160,7 +159,7 @@
     }
   }
 
-  onMount(() => {
+  $effect(() => {
     loadProfiles();
 
     EventsOn("data-updated", async () => {
