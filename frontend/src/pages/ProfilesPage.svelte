@@ -160,12 +160,11 @@
   }
 
   $effect(() => {
-    loadProfiles();
-
     EventsOn("data-updated", async () => {
-      profiles = [];
       await loadProfiles();
     });
+
+    loadProfiles();
 
     return () => {
       EventsOff("data-updated");
