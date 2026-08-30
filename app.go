@@ -42,9 +42,7 @@ func (a *App) startup(ctx context.Context) {
 	a.data = *data
 }
 
-// domReady is called after front-end resources have been loaded
 func (a *App) domReady(ctx context.Context) {
-	runtime.EventsEmit(a.ctx, "data-updated", nil)
 }
 
 // beforeClose is called when the application is about to quit
